@@ -51,8 +51,6 @@ processResources {
 jar {
     manifest {
         attributes(
-                'FMLCorePlugin': '',
-                'FMLCorePluginContainsFMLMod': 'true',
                 'ForceLoadAsMod': 'true',
                 'ModSide': 'CLIENT'
         )
