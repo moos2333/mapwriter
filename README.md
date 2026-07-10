@@ -1,36 +1,62 @@
-mapwriter
-=========
+```markdown
+# MapWriter
 
-MapWriter: A minimap mod for Minecraft
+A lightweight minimap mod for Minecraft 1.12.2.
 
+This is a community-maintained continuation of the original MapWriter 2.
 
-Instructions for development:
+## License
+MIT – see the [LICENSE](LICENSE) file.
 
-1) Run "gradlew setupDecompWorkspace" in the mapwriter folder.
+## Features
+- Small / large / full‑screen minimap
+- Waypoints with colour coding
+- Player trail and death markers
+- Underground mapping mode
+- Optional mob overlay
+- Minimal performance impact
 
-2) Run "gradlew eclipse" if using the eclipse IDE. If it does not work you may
-   need to copy the eclipse folder from a Forge src release into the mapwriter
-   folder and retry the command.
+## Building from Source
 
-3) Open eclipse and set the workspace directory to mapwriter/eclipse.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/moos233/mapwriter.git
+   cd mapwriter
+   ```
 
-4) You should now be able to modify the code and test by using the "Client" Run
-   Configuration.
+2. Build with Gradle (wrapper included):
+   ```bash
+   ./gradlew build
+   ```
+   The built JAR will be in `build/libs/`.
 
-Reobfuscation and Packaging:
+## Import into IDE
 
-1) Edit the version numbers in mapwriter.forge.MwForge and build.gradle.
-   The version numbers in mcmod.info should automatically be set to the same
-   versions as set in the build.gradle file.
+- **IntelliJ IDEA**: Open the project folder (select the `build.gradle` file).
+- **Eclipse**: Run `./gradlew eclipse` then import the project.
 
-2) Run "gradlew reobf".
+## Run the Client
 
-3) The reobfuscated jar should be output to the mapwriter/build/libs folder.
+- In your IDE, execute the `runClient` Gradle task.
+- Or from the command line: `./gradlew runClient`
 
-Acknowledgements:
+## Configuration
 
-* Chrixian for the code to get death markers working.
-* ProfMobius for the overlay API.
-* taelnia for extrautils compatibility patch.
-* LoneStar144 for minimap border and arrow textures.
-* jk-5 for updating the mod to be compatible with Minecraft 1.7.
+After the first run, a configuration file is created at `./config/mapwriter.cfg`.  
+You can adjust map size, opacity, key bindings, zoom levels and performance options.
+
+## Contributing
+
+Issues and pull requests are welcome on the [GitHub repository](https://github.com/moos233/mapwriter).
+
+## Credits
+
+- **Original author**: Mapwriter (Liam Davey)
+- **Previous maintainer**: Vectron
+- **Current maintainer**: moos233
+- **Contributors**: Chrixian, ProfMobius, taelnia, LoneStar144, jk-5
+
+---
+
+Enjoy!
+```
