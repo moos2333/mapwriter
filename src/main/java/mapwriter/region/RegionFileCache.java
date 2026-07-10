@@ -6,37 +6,31 @@ import java.util.Map;
 
 public class RegionFileCache
 {
+	private static final int MAX_REGION_FILES_OPEN = 32;
 
-	// simple Least Recently Used (LRU) cache implementation
-	class LruCache extends LinkedHashMap<String, RegionFile>
+	private class LruCache extends LinkedHashMap<String, RegionFile>
 	{
 		private static final long serialVersionUID = 1L;
-		static final int MAX_REGION_FILES_OPEN = 8;
 
 		public LruCache()
 		{
-			// initial capacity, loading factor, true for access time ordering
 			super(MAX_REGION_FILES_OPEN * 2, 0.5f, true);
 		}
 
-		// called on every put and putAll call, the entry 'entry' is removed
-		// if this function returns true.
 		@Override
-		protected boolean removeEldestEntry(Map.Entry<String, RegionFile> entry)
+		protected boolean removeEldestEntry(Map.Entry<String, RegionFile> eldest)
 		{
-			boolean ret = false;
-			if (this.size() > MAX_REGION_FILES_OPEN)
+			if (size() > MAX_REGION_FILES_OPEN)
 			{
-				RegionFile regionFile = entry.getValue();
-				regionFile.close();
-				ret = true;
+				eldest.getValue().close();
+				return true;
 			}
-			return ret;
+			return false;
 		}
 	}
 
-	private LruCache regionFileCache = new LruCache();
-	private File worldDir;
+	private final LruCache regionFileCache = new LruCache();
+	private final File worldDir;
 
 	public RegionFileCache(File worldDir)
 	{
@@ -45,43 +39,36 @@ public class RegionFileCache
 
 	public void close()
 	{
-		for (RegionFile regionFile : this.regionFileCache.values())
-		{
-			regionFile.close();
-		}
-		this.regionFileCache.clear();
+		for (RegionFile rf : regionFileCache.values())
+			rf.close();
+		regionFileCache.clear();
 	}
 
 	public RegionFile getRegionFile(int x, int z, int dimension)
 	{
-		File regionFilePath = this.getRegionFilePath(x, z, dimension);
-		String key = regionFilePath.toString();
-		RegionFile regionFile = this.regionFileCache.get(key);
-		if (regionFile == null)
+		File path = getRegionFilePath(x, z, dimension);
+		String key = path.toString();
+		RegionFile rf = regionFileCache.get(key);
+		if (rf == null)
 		{
-			regionFile = new RegionFile(regionFilePath);
-			this.regionFileCache.put(key, regionFile);
+			rf = new RegionFile(path);
+			regionFileCache.put(key, rf);
 		}
-		return regionFile;
+		return rf;
 	}
 
 	public File getRegionFilePath(int x, int z, int dimension)
 	{
 		File dir = this.worldDir;
 		if (dimension != 0)
-		{
 			dir = new File(dir, "DIM" + dimension);
-		}
 		dir = new File(dir, "region");
-
 		String filename = String.format("r.%d.%d.mca", x >> Region.SHIFT, z >> Region.SHIFT);
-
 		return new File(dir, filename);
 	}
 
 	public boolean regionFileExists(int x, int z, int dimension)
 	{
-		File regionFilePath = this.getRegionFilePath(x, z, dimension);
-		return regionFilePath.isFile();
+		return getRegionFilePath(x, z, dimension).isFile();
 	}
 }

@@ -98,8 +98,8 @@ public class Mw
 		this.mc = Minecraft.getMinecraft();
 
 		// create base save directory
-		this.saveDir = new File(this.mc.mcDataDir, "saves");
-		this.configDir = new File(this.mc.mcDataDir, "config");
+		this.saveDir = new File(this.mc.gameDir, "saves");
+		this.configDir = new File(this.mc.gameDir, "config");
 
 		this.ready = false;
 
@@ -471,26 +471,24 @@ public class Mw
 
 	public void reloadBlockColours()
 	{
-		BlockColours bc = new BlockColours();
-		File f = new File(this.configDir, Reference.blockColourSaveFileName);
+		if (this.blockColours == null)
+			this.blockColours = new BlockColours();
 
-		if (Config.useSavedBlockColours && f.isFile() && bc.CheckFileVersion(f))
-		{
-			// load block colours from file
-			Logging.logInfo("loading block colours from %s", f);
-			bc.loadFromFile(f);
-			this.loadBlockColourOverrides(bc);
-		}
+		BlockColourGen.genBlockColours(this.blockColours);
+
+		File defaultOverrideFile = new File(this.configDir, "mapwriter_block_colours.txt");
+		if (defaultOverrideFile.isFile())
+			this.blockColours.loadFromFile(defaultOverrideFile);
 		else
-		{
-			// generate block colours from current texture pack
-			Logging.logInfo("generating block colours");
-			BlockColourGen.genBlockColours(bc);
-			// load overrides again to override block and biome colours
-			this.loadBlockColourOverrides(bc);
-			this.saveBlockColours(bc);
-		}
-		this.blockColours = bc;
+			BlockColours.writeOverridesFile(defaultOverrideFile);
+
+		File savedColoursFile = new File(this.worldDir, "mapwriter_saved_colours.txt");
+		if (savedColoursFile.isFile())
+			this.blockColours.loadFromFile(savedColoursFile);
+
+		this.mapTexture = new MapTexture(this.textureSize, Config.linearTextureScaling);
+		this.undergroundMapTexture = new UndergroundTexture(this, this.textureSize, Config.linearTextureScaling);
+		this.chunkManager = new ChunkManager(this);
 	}
 
 	public void reloadMapTexture()
@@ -619,9 +617,6 @@ public class Mw
 	public void toggleUndergroundMode()
 	{
 		Config.undergroundMode = !Config.undergroundMode;
-		// save the new value of underground mode.
-		ConfigurationHandler.configuration.get(Reference.catOptions, "undergroundMode", Config.undergroundModeDef).set(
-				Config.undergroundMode);
 	}
 
 	// update the saved player position and orientation
@@ -638,7 +633,7 @@ public class Mw
 
 		if (this.mc.world != null)
 		{
-			if (!this.mc.world.getChunkFromBlockCoords(new BlockPos(this.playerX, 0, this.playerZ)).isEmpty())
+			if (!this.mc.world.getChunk(new BlockPos(this.playerX, 0, this.playerZ)).isEmpty())
 			{
 				this.playerBiome =
 						this.mc.world.getBiomeForCoordsBody(new BlockPos(this.playerX, 0, this.playerZ)).getBiomeName();

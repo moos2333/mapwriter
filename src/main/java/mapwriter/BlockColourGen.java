@@ -101,7 +101,7 @@ public class BlockColourGen
 							// this method to get the real texture
 							// this makes the carpenterblocks render as brown
 							// blocks on the map
-							if (Block.REGISTRY.getNameForObject(block).getResourceDomain().contains("CarpentersBlocks"))
+							if (Block.REGISTRY.getNameForObject(block).getNamespace().contains("CarpentersBlocks"))
 							{
 								// icon = block.getIcon(1, 16);
 								// blockColour = getIconMapColour(icon,

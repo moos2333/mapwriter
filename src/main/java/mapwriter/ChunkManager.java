@@ -160,7 +160,7 @@ public class ChunkManager
 		{
 			for (int x = 0; x < 3; x++)
 			{
-				Chunk chunk = this.mw.mc.world.getChunkFromChunkCoords(chunkArrayX + x, chunkArrayZ + z);
+				Chunk chunk = this.mw.mc.world.getChunk(chunkArrayX + x, chunkArrayZ + z);
 				if (!chunk.isEmpty())
 				{
 					chunkArray[z * 3 + x] = copyToMwChunk(chunk);

@@ -1,16 +1,14 @@
 package mapwriter.forge;
 
 import java.util.ArrayList;
-
 import org.apache.commons.lang3.reflect.FieldUtils;
-
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.gui.screens.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
-
 import mapwriter.Mw;
 import mapwriter.config.Config;
+import mapwriter.config.WorldConfig;
 import mapwriter.overlay.OverlaySlime;
 import mapwriter.util.Logging;
 import mapwriter.util.Utils;
@@ -63,13 +61,13 @@ public class EventHandler
 			return;
 		}
 		try
-		{ // I don't want to crash the game when we derp up in here
+		{
 			if (event.getMessage() instanceof TextComponentTranslation)
 			{
 				TextComponentTranslation component = (TextComponentTranslation) event.getMessage();
 				if (component.getKey().equals("commands.seed.success"))
 				{
-					Long lSeed = (long) 0;
+					Long lSeed = 0L;
 					if (component.getFormatArgs()[0] instanceof Long)
 					{
 						lSeed = (Long) component.getFormatArgs()[0];
@@ -79,9 +77,7 @@ public class EventHandler
 						lSeed = Long.parseLong((String) component.getFormatArgs()[0]);
 					}
 					OverlaySlime.setSeed(lSeed);
-					event.setCanceled(true); // Don't let the player see this
-					// seed message, They didn't do
-					// /seed, we did
+					event.setCanceled(true);
 				}
 			}
 			else if (event.getMessage() instanceof TextComponentString)
@@ -89,23 +85,18 @@ public class EventHandler
 				TextComponentString component = (TextComponentString) event.getMessage();
 				String msg = component.getUnformattedText();
 				if (msg.startsWith("Seed: "))
-				{ // Because bukkit...
+				{
 					OverlaySlime.setSeed(Long.parseLong(msg.substring(6)));
-					event.setCanceled(true); // Don't let the player see this
-					// seed message, They didn't do
-					// /seed, we did
+					event.setCanceled(true);
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			Logging.logError("Something went wrong getting the seed. %s", new Object[] { e.toString() });
+			Logging.logError("Something went wrong getting the seed. %s", e.toString());
 		}
 	}
 
-	// a bit odd way to reload the blockcolours. if the models are not loaded
-	// yet then the uv values and icons will be wrong.
-	// this only happens if fml.skipFirstTextureLoad is enabled.
 	@SubscribeEvent
 	public void onGuiOpenEvent(GuiOpenEvent event)
 	{
@@ -117,6 +108,8 @@ public class EventHandler
 		else if (event.getGui() instanceof GuiGameOver)
 		{
 			this.mw.onPlayerDeath();
+			this.mw.markerManager.save(WorldConfig.getInstance().worldConfiguration, "markers");
+			WorldConfig.getInstance().worldConfiguration.save();
 		}
 		else if (event.getGui() instanceof GuiScreenRealmsProxy)
 		{
@@ -124,7 +117,6 @@ public class EventHandler
 			{
 				RealmsScreen proxy = ((GuiScreenRealmsProxy) event.getGui()).getProxy();
 				RealmsMainScreen parrent = null;
-
 				if (proxy instanceof RealmsLongRunningMcoTaskScreen || proxy instanceof RealmsConfigureWorldScreen)
 				{
 					Object obj = FieldUtils.readField(proxy, "lastScreen", true);
@@ -132,7 +124,6 @@ public class EventHandler
 					{
 						parrent = (RealmsMainScreen) obj;
 					}
-
 					if (parrent != null)
 					{
 						long id = (Long) FieldUtils.readField(parrent, "selectedServerId", true);
@@ -142,8 +133,6 @@ public class EventHandler
 							for (Object item : list)
 							{
 								RealmsServer server = (RealmsServer) item;
-								String Name = server.getName();
-								String Owner = server.owner;
 								StringBuilder builder = new StringBuilder();
 								builder.append(server.owner);
 								builder.append("_");
@@ -152,13 +141,9 @@ public class EventHandler
 							}
 						}
 					}
-
 				}
 			}
-			catch (IllegalAccessException e)
-			{
-
-			}
+			catch (IllegalAccessException e) {}
 		}
 	}
 
@@ -167,7 +152,7 @@ public class EventHandler
 	{
 		if (Config.reloadColours)
 		{
-			Logging.logInfo("Skipping the first generation of blockcolours, models are not loaded yet", (Object[]) null);
+			Logging.logInfo("Skipping the first generation of blockcolours, models are not loaded yet");
 		}
 		else
 		{

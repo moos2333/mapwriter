@@ -174,7 +174,7 @@ public class UndergroundTexture extends Texture
 			{
 				if (this.isChunkInTexture(cx, cz))
 				{
-					Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
+					Chunk chunk = world.getChunk(cx, cz);
 					int tx = cx << 4 & this.textureSize - 1;
 					int tz = cz << 4 & this.textureSize - 1;
 					int pixelOffset = tz * this.textureSize + tx;
