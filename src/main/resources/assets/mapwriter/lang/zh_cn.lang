@@ -1,12 +1,12 @@
 # Keys
-key.mw_open_gui=打开地图主界面
-key.mw_new_marker=添加新导航点
+key.mw_open_gui=打开地图
+key.mw_new_marker=新建导航点
 key.mw_next_map_mode=切换地图模式
 key.mw_next_marker_group=下一组导航点
 key.mw_teleport=传送到选定导航点
 key.mw_zoom_in=小地图放大
 key.mw_zoom_out=小地图缩小
-key.mw_underground_mode=洞穴地图模式
+key.mw_underground_mode=洞穴模式
 
 # Config Categories
 mw.configgui.ctgy.general=常规
@@ -23,7 +23,6 @@ mw.config.teleportEnabled=允许传送
 mw.config.teleportEnabled.tooltip=启用后可通过地图传送玩家
 mw.config.teleportCommand=传送命令
 mw.config.teleportCommand.tooltip=用于传送玩家的命令
-
 mw.config.maxChunkSaveDistSq=最大绘制距离
 mw.config.maxChunkSaveDistSq.tooltip=以玩家为中心的地图区块加载范围（平方距离）
 mw.config.maxDeathMarkers=死亡标记数量
@@ -76,7 +75,7 @@ mw.config.map.coordsMode=坐标显示
 mw.config.map.coordsMode.tooltip=选择坐标显示模式
 mw.config.map.biomeMode=生物群系显示
 mw.config.map.biomeMode.tooltip=选择生物群系名称显示模式
-mw.config.map.coordsMode.disabled=不显示
+mw.config.map.coordsMode.disabled=禁用
 mw.config.map.coordsMode.small=小
 mw.config.map.coordsMode.large=大
 mw.config.map.ctgy.position=地图位置
@@ -88,11 +87,11 @@ mw.gui.mwgui.options=选项
 mw.gui.mwgui.dimension=维度: %d
 mw.gui.mwgui.group.1=导航组: %s
 mw.gui.mwgui.group.2=组
-mw.gui.mwgui.overlay=叠加层: %s
+mw.gui.mwgui.overlay=覆盖层: %s
 mw.gui.mwgui.keys=快捷键
 mw.gui.mwgui.helptext.1=左键拖拽或方向键平移地图
 mw.gui.mwgui.helptext.2=滚轮或Page Up/Down缩放地图
-mw.gui.mwgui.helptext.3=右键点击地图创建导航点，或右键点击已有导航点编辑
+mw.gui.mwgui.helptext.3=右键点击地图创建导航点，右键点击已有导航点可编辑
 mw.gui.mwgui.helptext.4=左键拖拽选中导航点可移动它
 mw.gui.mwgui.helptext.5=在选中的导航点上滚动滚轮切换颜色
 mw.gui.mwgui.helptext.6=在维度标签或导航组标签上滚动滚轮切换
