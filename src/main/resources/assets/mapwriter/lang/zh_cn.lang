@@ -45,6 +45,7 @@ mw.config.zoomInLevels=缩放等级（放大）
 mw.config.zoomInLevels.tooltip=可放大的最大等级，不影响性能
 mw.config.textureSize=纹理尺寸
 mw.config.textureSize.tooltip=地图纹理的尺寸（像素）
+mw.config.showMobOverlay=显示生物
 
 # Map Config
 mw.config.map.enabled=启用地图
