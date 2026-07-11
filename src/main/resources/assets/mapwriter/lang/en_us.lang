@@ -45,6 +45,7 @@ mw.config.zoomInLevels=Zoom In Levels
 mw.config.zoomInLevels.tooltip=Maximum zoom-in steps. Does not affect performance
 mw.config.textureSize=Texture Size
 mw.config.textureSize.tooltip=Sets the map texture size in pixels
+mw.config.showMobOverlay=Show Mobs
 
 # Map Config
 mw.config.map.enabled=Map Enabled
