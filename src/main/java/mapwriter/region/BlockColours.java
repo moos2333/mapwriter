@@ -244,17 +244,21 @@ public class BlockColours
 
 	public int getBiomeColour(IBlockState BlockState, int biomeId)
 	{
-		String biomeName = "";
 		Biome biome = Biome.getBiomeForId(biomeId);
 		if (biomeId == 255) biome = Biomes.PLAINS;
-		if (biome != null) biomeName = biome.getBiomeName();
+		String biomeName = (biome != null) ? biome.getBiomeName() : "";
 		Block block = BlockState.getBlock();
+		if (block == null || block.delegate == null || block.delegate.name() == null)
+		{
+			return 0xffffff;
+		}
 		int meta = block.getMetaFromState(BlockState);
 		return this.getBiomeColour(block.delegate.name().toString(), meta, biomeName);
 	}
 
 	public int getBiomeColour(String BlockName, int meta, String biomeName)
 	{
+		if (biomeName == null) biomeName = "";
 		int colourMultiplier = 0xffffff;
 		if (this.bcMap.containsKey(this.CombineBlockMeta(BlockName, meta)))
 		{
@@ -300,9 +304,11 @@ public class BlockColours
 	public int getColour(IBlockState BlockState)
 	{
 		Block block = BlockState.getBlock();
-		int meta = block.getMetaFromState(BlockState);
-		if (block.delegate == null || block.delegate.name() == null)
+		if (block == null || block.delegate == null || block.delegate.name() == null)
+		{
 			return 0;
+		}
+		int meta = block.getMetaFromState(BlockState);
 		return this.getColour(block.delegate.name().toString(), meta);
 	}
 

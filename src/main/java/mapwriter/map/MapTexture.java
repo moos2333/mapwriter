@@ -12,6 +12,9 @@ import mapwriter.util.Texture;
 
 public class MapTexture extends Texture
 {
+	private static final int MAX_QUEUE_SIZE = 500;
+	private static final int MAX_UPDATES_PER_FRAME = 200;
+
 	private static class Rect
 	{
 		final int x, y, w, h;
@@ -24,8 +27,6 @@ public class MapTexture extends Texture
 	private MapViewRequest requestedView = null;
 	private Region[] regionArray;
 	private final ConcurrentLinkedQueue<Rect> textureUpdateQueue = new ConcurrentLinkedQueue<>();
-	private int lastUpdateX = Integer.MIN_VALUE;
-	private int lastUpdateZ = Integer.MIN_VALUE;
 
 	public MapTexture(int textureSize, boolean linearScaling)
 	{
@@ -38,6 +39,10 @@ public class MapTexture extends Texture
 
 	public void addTextureUpdate(int x, int z, int w, int h)
 	{
+		if (textureUpdateQueue.size() >= MAX_QUEUE_SIZE)
+		{
+			textureUpdateQueue.poll();
+		}
 		textureUpdateQueue.add(new Rect(x, z, w, h));
 	}
 
@@ -87,12 +92,19 @@ public class MapTexture extends Texture
 	{
 		if (textureUpdateQueue.isEmpty())
 			return;
-		List<Rect> batch = new ArrayList<>();
+
+		List<Rect> batch = new ArrayList<>(MAX_UPDATES_PER_FRAME);
 		Rect r;
-		while ((r = textureUpdateQueue.poll()) != null)
+		int count = 0;
+		while ((r = textureUpdateQueue.poll()) != null && count < MAX_UPDATES_PER_FRAME)
+		{
 			batch.add(r);
+			count++;
+		}
 		for (Rect rect : batch)
+		{
 			this.updateTextureArea(rect.x, rect.y, rect.w, rect.h);
+		}
 	}
 
 	public void requestView(MapViewRequest req, BackgroundExecutor executor, RegionManager regionManager)

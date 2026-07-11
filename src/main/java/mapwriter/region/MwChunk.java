@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import mapwriter.util.Logging;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -42,15 +41,12 @@ public class MwChunk implements IChunk
 		}
 		catch (SecurityException e)
 		{
-			// ...
 		}
 		catch (NoSuchMethodException e)
 		{
-			// ...
 		}
 		catch (ClassNotFoundException e)
 		{
-			//
 		}
 	}
 
@@ -73,26 +69,20 @@ public class MwChunk implements IChunk
 		}
 		catch (SecurityException e)
 		{
-			// ...
 		}
 		catch (NoSuchMethodException e)
 		{
-			// ...
 		}
 		catch (ClassNotFoundException e)
 		{
-			//
 		}
 		catch (NoSuchFieldException e)
 		{
-			//
 		}
 	}
 
-	// load from anvil file
 	public static MwChunk read(int x, int z, int dimension, RegionFileCache regionFileCache)
 	{
-		//
 		Boolean flag = true;
 		byte[] biomeArray = null;
 		ExtendedBlockStorage[] data = new ExtendedBlockStorage[16];
@@ -117,30 +107,6 @@ public class MwChunk implements IChunk
 		{
 			try
 			{
-
-				// chunk NBT structure:
-				//
-				// COMPOUND ""
-				// COMPOUND "level"
-				// INT "xPos"
-				// INT "zPos"
-				// LONG "LastUpdate"
-				// BYTE "TerrainPopulated"
-				// BYTE_ARRAY "Biomes"
-				// INT_ARRAY "HeightMap"
-				// LIST(COMPOUND) "Sections"
-				// BYTE "Y"
-				// BYTE_ARRAY "Blocks"
-				// BYTE_ARRAY "Add"
-				// BYTE_ARRAY "Data"
-				// BYTE_ARRAY "BlockLight"
-				// BYTE_ARRAY "SkyLight"
-				// END
-				// LIST(COMPOUND) "Entities"
-				// LIST(COMPOUND) "TileEntities"
-				// LIST(COMPOUND) "TileTicks"
-				// END
-				// END
 				NBTTagCompound nbttagcompound = CompressedStreamTools.read(dis);
 				NBTTagCompound level = nbttagcompound.getCompoundTag("Level");
 
@@ -159,18 +125,15 @@ public class MwChunk implements IChunk
 					NBTTagCompound section = sections.getCompoundTagAt(k);
 					int y = section.getByte("Y");
 					ExtendedBlockStorage extendedblockstorage = new ExtendedBlockStorage(y << 4, flag);
-					byte[] abyte = nbttagcompound.getByteArray("Blocks");
-					NibbleArray nibblearray = new NibbleArray(nbttagcompound.getByteArray("Data"));
-					NibbleArray nibblearray1 =
-							nbttagcompound.hasKey("Add", 7) ?
-									new NibbleArray(nbttagcompound.getByteArray("Add")) :
-									null;
+					byte[] abyte = section.getByteArray("Blocks");
+					NibbleArray nibblearray = new NibbleArray(section.getByteArray("Data"));
+					NibbleArray nibblearray1 = section.hasKey("Add", 7) ? new NibbleArray(section.getByteArray("Add")) : null;
 					extendedblockstorage.getData().setDataFromNBT(abyte, nibblearray, nibblearray1);
-					extendedblockstorage.setBlockLight(new NibbleArray(nbttagcompound.getByteArray("BlockLight")));
+					extendedblockstorage.setBlockLight(new NibbleArray(section.getByteArray("BlockLight")));
 
 					if (flag)
 					{
-						extendedblockstorage.setSkyLight(new NibbleArray(nbttagcompound.getByteArray("SkyLight")));
+						extendedblockstorage.setSkyLight(new NibbleArray(section.getByteArray("SkyLight")));
 					}
 
 					extendedblockstorage.recalculateRefCounts();
@@ -178,6 +141,10 @@ public class MwChunk implements IChunk
 				}
 
 				biomeArray = level.getByteArray("Biomes");
+				if (biomeArray == null || biomeArray.length != 256)
+				{
+					biomeArray = new byte[256];
+				}
 
 				NBTTagList nbttaglist2 = level.getTagList("TileEntities", 10);
 
@@ -195,53 +162,39 @@ public class MwChunk implements IChunk
 				}
 
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
-				Logging.logError("%s: could not read chunk (%d, %d) from region file\n", e, x, z);
+				Logging.logError("Failed to read chunk (%d, %d): %s", x, z, e.getMessage());
+				return new MwChunk(x, z, dimension, new ExtendedBlockStorage[16], new byte[256], new HashMap<BlockPos, TileEntity>());
 			}
 			finally
 			{
 				try
 				{
-					dis.close();
+					if (dis != null) dis.close();
 				}
 				catch (IOException e)
 				{
 					Logging.logError("MwChunk.read: %s while closing input stream", e);
 				}
 			}
-			// this.log("MwChunk.read: chunk (%d, %d) empty=%b", this.x, this.z,
-			// empty);
 		}
-		else
-		{
-			// this.log("MwChunk.read: chunk (%d, %d) input stream is null",
-			// this.x, this.z);
-		}
+
+		if (biomeArray == null) biomeArray = new byte[256];
+		if (TileEntityMap == null) TileEntityMap = new HashMap<BlockPos, TileEntity>();
 
 		return new MwChunk(x, z, dimension, data, biomeArray, TileEntityMap);
 	}
 
 	public final int x;
-
 	public final int z;
-
 	public final int dimension;
-
 	public ExtendedBlockStorage[] dataArray = new ExtendedBlockStorage[16];
-
 	public final Map<BlockPos, TileEntity> tileentityMap;
-
 	public final byte[] biomeArray;
-
 	public final int maxY;
 
-	public MwChunk(int x,
-			int z,
-			int dimension,
-			ExtendedBlockStorage[] data,
-			byte[] biomeArray,
-			Map<BlockPos, TileEntity> TileEntityMap)
+	public MwChunk(int x, int z, int dimension, ExtendedBlockStorage[] data, byte[] biomeArray, Map<BlockPos, TileEntity> TileEntityMap)
 	{
 		this.x = x;
 		this.z = z;
@@ -269,11 +222,9 @@ public class MwChunk implements IChunk
 
 		if (k == 255)
 		{
-			Biome biome =
-					Minecraft.getMinecraft().world.getBiomeProvider().getBiome(new BlockPos(k, k, k), Biomes.PLAINS);
+			Biome biome = Minecraft.getMinecraft().world.getBiomeProvider().getBiome(new BlockPos(k, k, k), Biomes.PLAINS);
 			k = Biome.getIdForBiome(biome);
 		}
-		;
 		return k;
 	}
 
@@ -281,8 +232,7 @@ public class MwChunk implements IChunk
 	public IBlockState getBlockState(int x, int y, int z)
 	{
 		int yi = y >> 4 & 0xf;
-
-		return this.dataArray != null && this.dataArray[yi] != null ?
+		return this.dataArray[yi] != null ?
 				this.dataArray[yi].getData().get(x & 15, y & 15, z & 15) :
 				Blocks.AIR.getDefaultState();
 	}
@@ -295,13 +245,6 @@ public class MwChunk implements IChunk
 	@Override
 	public int getLightValue(int x, int y, int z)
 	{
-		// int yi = (y >> 4) & 0xf;
-		// int offset = ((y & 0xf) << 8) | ((z & 0xf) << 4) | (x & 0xf);
-
-		// int light = ((this.lightingArray != null) && (this.lightingArray[yi]
-		// != null)) ? this.lightingArray[yi][offset >> 1] : 15;
-
-		// return ((offset & 1) == 1) ? ((light >> 4) & 0xf) : (light & 0xf);
 		return 15;
 	}
 
@@ -335,15 +278,8 @@ public class MwChunk implements IChunk
 			DataOutputStream dos = regionFile.getChunkDataOutputStream(this.x & 31, this.z & 31);
 			if (dos != null)
 			{
-				// Nbt chunkNbt = this.getNbt();
 				try
 				{
-					// RegionManager.logInfo("writing chunk (%d, %d) to region
-					// file",
-					// this.x, this.z);
-					// chunkNbt.writeElement(dos);
-					// use minecraft build in save tool for saving the Anvil
-					// Data
 					CompressedStreamTools.write(this.writeChunkToNBT(), dos);
 				}
 				catch (IOException e)
@@ -372,12 +308,9 @@ public class MwChunk implements IChunk
 		{
 			Logging.logError("error: could not open region file for chunk (%d, %d)", this.x, this.z);
 		}
-
 		return error;
 	}
 
-	// changed to use the NBTTagCompound that minecraft uses. this makes the
-	// local way of saving anvill data the same as Minecraft world data
 	private NBTTagCompound writeChunkToNBT()
 	{
 		NBTTagCompound level = new NBTTagCompound();
@@ -415,8 +348,7 @@ public class MwChunk implements IChunk
 				}
 				else
 				{
-					nbttagcompound
-							.setByteArray("SkyLight", new byte[extendedblockstorage.getBlockLight().getData().length]);
+					nbttagcompound.setByteArray("SkyLight", new byte[extendedblockstorage.getBlockLight().getData().length]);
 				}
 
 				nbttaglist.appendTag(nbttagcompound);
@@ -437,8 +369,6 @@ public class MwChunk implements IChunk
 			}
 			catch (Exception e)
 			{
-				// we eat this exception becous we are doing something we
-				// shouldnt do on client side.
 			}
 		}
 

@@ -109,7 +109,7 @@ public class Mw
 		if (this.playerTrail != null) this.playerTrail.close();
 		if (this.markerManager != null)
 		{
-			this.markerManager.save(WorldConfig.getInstance().worldConfiguration, Reference.catMarkers);
+			this.markerManager.saveAll();
 			this.markerManager.clear();
 		}
 		if (this.miniMap != null) this.miniMap.close();
@@ -153,16 +153,13 @@ public class Mw
 
 		this.tickCounter = 0;
 
-		// ★★★ 核心修复：先初始化颜色数据，确保草等方块颜色正确 ★★★
-		this.reloadBlockColours();  // 创建 blockColours, mapTexture, undergroundMapTexture, chunkManager
+		this.reloadBlockColours();
 
-		// 创建其余依赖组件
 		this.markerManager = new MarkerManager();
-		this.markerManager.load(WorldConfig.getInstance().worldConfiguration, Reference.catMarkers);
+		this.markerManager.loadAll();
 		this.playerTrail = new Trail(this, Reference.PlayerTrailName);
 		this.executor = new BackgroundExecutor();
 
-		// regionManager 依赖 blockColours，现在已有
 		this.regionManager = new RegionManager(
 				this.worldDir,
 				this.imageDir,
@@ -170,12 +167,9 @@ public class Mw
 				Config.zoomInLevels,
 				Config.zoomOutLevels);
 
-		// miniMap 依赖 mapTexture，已在 reloadBlockColours 中创建
 		this.miniMap = new MiniMap(this);
 		this.miniMap.view.setDimension(this.mc.player.dimension);
 
-		// chunkManager 已在 reloadBlockColours 中创建，无需重复
-		// 但若需要确保不为null，可保留，但reloadBlockColours已保证
 		if (this.chunkManager == null)
 			this.chunkManager = new ChunkManager(this);
 

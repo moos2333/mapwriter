@@ -12,6 +12,7 @@ import mapwriter.config.WorldConfig;
 import mapwriter.overlay.OverlaySlime;
 import mapwriter.util.Logging;
 import mapwriter.util.Utils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreenRealmsProxy;
@@ -38,6 +39,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void eventChunkLoad(ChunkEvent.Load event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (event.getWorld().isRemote)
 		{
 			this.mw.onChunkLoad(event.getChunk());
@@ -47,6 +49,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void eventChunkUnload(ChunkEvent.Unload event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (event.getWorld().isRemote)
 		{
 			this.mw.onChunkUnload(event.getChunk());
@@ -56,6 +59,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void onClientChat(ClientChatReceivedEvent event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (OverlaySlime.seedFound || !OverlaySlime.seedAsked)
 		{
 			return;
@@ -100,6 +104,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void onGuiOpenEvent(GuiOpenEvent event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (event.getGui() instanceof GuiMainMenu && Config.reloadColours)
 		{
 			this.mw.reloadBlockColours();
@@ -108,8 +113,7 @@ public class EventHandler
 		else if (event.getGui() instanceof GuiGameOver)
 		{
 			this.mw.onPlayerDeath();
-			this.mw.markerManager.save(WorldConfig.getInstance().worldConfiguration, "markers");
-			WorldConfig.getInstance().worldConfiguration.save();
+			this.mw.markerManager.saveAll();
 		}
 		else if (event.getGui() instanceof GuiScreenRealmsProxy)
 		{
@@ -150,6 +154,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void onTextureStitchEventPost(TextureStitchEvent.Post event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (Config.reloadColours)
 		{
 			Logging.logInfo("Skipping the first generation of blockcolours, models are not loaded yet");
@@ -163,6 +168,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void renderMap(RenderGameOverlayEvent.Post event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HOTBAR)
 		{
 			Mw.getInstance().onTick();
@@ -172,6 +178,7 @@ public class EventHandler
 	@SubscribeEvent
 	public void renderWorldLastEvent(RenderWorldLastEvent event)
 	{
+		if (Minecraft.getMinecraft().world == null) return;
 		if (Mw.getInstance().ready)
 		{
 			Mw.getInstance().markerManager.drawMarkersWorld(event.getPartialTicks());

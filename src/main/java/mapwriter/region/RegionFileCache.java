@@ -3,10 +3,11 @@ package mapwriter.region;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import mapwriter.util.Logging;
 
 public class RegionFileCache
 {
-	private static final int MAX_REGION_FILES_OPEN = 32;
+	private static final int MAX_REGION_FILES_OPEN = 24;
 
 	private class LruCache extends LinkedHashMap<String, RegionFile>
 	{
@@ -22,7 +23,14 @@ public class RegionFileCache
 		{
 			if (size() > MAX_REGION_FILES_OPEN)
 			{
-				eldest.getValue().close();
+				try
+				{
+					eldest.getValue().close();
+				}
+				catch (Exception e)
+				{
+					Logging.logError("Failed to close region file %s: %s", eldest.getKey(), e.getMessage());
+				}
 				return true;
 			}
 			return false;
@@ -40,7 +48,16 @@ public class RegionFileCache
 	public void close()
 	{
 		for (RegionFile rf : regionFileCache.values())
-			rf.close();
+		{
+			try
+			{
+				rf.close();
+			}
+			catch (Exception e)
+			{
+				Logging.logError("Failed to close region file during cache shutdown: %s", e.getMessage());
+			}
+		}
 		regionFileCache.clear();
 	}
 
