@@ -35,6 +35,7 @@ public class Config
 	public static boolean portNumberInWorldNameEnabled = true;
 	public static boolean regionFileOutputEnabledSP = true;
 	public static boolean regionFileOutputEnabledMP = true;
+	public static boolean showMobOverlay = false;
 
 	public static int overlayModeIndex = 0;
 	public static int overlayZoomLevel = 0;

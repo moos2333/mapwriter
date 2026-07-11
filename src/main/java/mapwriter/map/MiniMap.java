@@ -6,6 +6,7 @@ import java.util.List;
 import mapwriter.Mw;
 import mapwriter.config.Config;
 import mapwriter.map.mapmode.MapMode;
+import mapwriter.overlay.OverlayMobs;
 
 public class MiniMap
 {
@@ -21,24 +22,20 @@ public class MiniMap
 	private List<MapRenderer> mapList;
 	private MapRenderer currentMap = null;
 
+	private final OverlayMobs mobOverlay;
+
 	public MiniMap(Mw mw)
 	{
-		// map view shared between large and small map modes
 		this.view = new MapView(mw, false);
 		this.view.setZoomLevel(Config.overlayZoomLevel);
 
-		// small map mode
 		this.smallMapMode = new MapMode(Config.smallMap);
 		this.smallMap = new MapRenderer(mw, this.smallMapMode, this.view);
 
-		// large map mode
 		this.largeMapMode = new MapMode(Config.largeMap);
 		this.largeMap = new MapRenderer(mw, this.largeMapMode, this.view);
 
 		this.mapList = new ArrayList<MapRenderer>();
-
-		// add small, large and underground map modes if they
-		// are enabled.
 		if (this.smallMapMode.getConfig().enabled)
 		{
 			this.mapList.add(this.smallMap);
@@ -47,12 +44,13 @@ public class MiniMap
 		{
 			this.mapList.add(this.largeMap);
 		}
-		// add a null entry (hides the overlay when selected)
 		this.mapList.add(null);
 
-		// sanitize overlayModeIndex loaded from config
 		this.nextOverlayMode(0);
 		this.currentMap = this.mapList.get(Config.overlayModeIndex);
+
+		this.mobOverlay = new OverlayMobs();
+		this.mobOverlay.setEnabled(Config.showMobOverlay);
 	}
 
 	public void close()
@@ -61,27 +59,28 @@ public class MiniMap
 		this.currentMap = null;
 	}
 
-	// draw the map overlay, player arrow, and markers
 	public void drawCurrentMap()
 	{
 		if (this.currentMap != null)
 		{
 			this.currentMap.draw();
 		}
+		if (Config.showMobOverlay && this.currentMap != null)
+		{
+			this.mobOverlay.draw(this.currentMap.getMapMode(), this.view);
+		}
 	}
 
-	// toggle between small map, underground map and no map
+	public void onTick()
+	{
+		this.mobOverlay.onTick();
+	}
+
 	public MapRenderer nextOverlayMode(int increment)
 	{
 		int size = this.mapList.size();
 		Config.overlayModeIndex = (Config.overlayModeIndex + size + increment) % size;
-
-		MapRenderer newMap = this.mapList.get(Config.overlayModeIndex);
-
-		// if (newMap.getMapMode().config.enabled)
-		// {
-		this.currentMap = newMap;
-		// }
+		this.currentMap = this.mapList.get(Config.overlayModeIndex);
 		return this.currentMap;
 	}
 }

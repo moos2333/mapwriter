@@ -45,6 +45,7 @@ public class ConfigurationHandler
 		Config.configTextureSize = configuration.getInt("textureSize", Reference.catOptions, Config.configTextureSize, 1024, 4096, "", "mw.config.textureSize");
 		Config.overlayModeIndex = configuration.getInt("overlayModeIndex", Reference.catOptions, Config.overlayModeIndex, 0, 1000, "", "mw.config.overlayModeIndex");
 		Config.overlayZoomLevel = configuration.getInt("overlayZoomLevel", Reference.catOptions, Config.overlayZoomLevel, Config.zoomInLevels, Config.zoomOutLevels, "", "mw.config.overlayZoomLevel");
+		Config.showMobOverlay = configuration.getBoolean("showMobOverlay", Reference.catOptions, Config.showMobOverlay, "", "mw.config.showMobOverlay");
 	}
 
 	public static void setMapModeDefaults()

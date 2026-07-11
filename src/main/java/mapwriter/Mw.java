@@ -272,6 +272,8 @@ public class Mw
 		if (Config.undergroundMode && this.tickCounter % 30 == 0)
 			this.undergroundMapTexture.update();
 
+		this.miniMap.onTick();
+
 		if (!(this.mc.currentScreen instanceof MwGui))
 		{
 			this.miniMap.view.setViewCentreScaled(this.playerX, this.playerZ, this.playerDimension);
