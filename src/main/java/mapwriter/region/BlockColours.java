@@ -52,7 +52,7 @@ public class BlockColours
 	public static final String blockSectionString = "[blocks]";
 
 	private LinkedHashMap<String, BiomeData> biomeMap = new LinkedHashMap<String, BiomeData>();
-	private LinkedHashMap<String, BlockData> bcMap = new LinkedHashMap<String, BlockData>();
+	private LinkedHashMap<String, BlockData[]> bcMap = new LinkedHashMap<String, BlockData[]>();
 	private Map<String, Integer> grassCache = new HashMap<String, Integer>();
 	private Map<String, Integer> foliageCache = new HashMap<String, Integer>();
 	private Map<String, Integer> waterCache = new HashMap<String, Integer>();
@@ -103,7 +103,16 @@ public class BlockColours
 					"blocktype biomesoplenty:leaves_3 * leaves	# BOP Leave block\n" +
 					"blocktype biomesoplenty:leaves_4 * leaves	# BOP Leave block\n" +
 					"blocktype biomesoplenty:leaves_5 * leaves	# BOP Leave block\n" +
-					"blocktype biomesoplenty:tree_moss * foliage	# biomes o plenty tree moss\n");
+					"blocktype biomesoplenty:tree_moss * foliage	# biomes o plenty tree moss\n" +
+					"block candymod:candy_grass_block 0 ffffb6d5\n" +
+					"block candymod:candy_grass_block 1 ff754525\n" +
+					"block tconstruct:slime_grass 1 ff30db92\n" +
+					"block tconstruct:slime_grass 2 ff30db92\n" +
+					"block thebetweenlands:swamp_grass 0 ff2a3f24\n" +
+					"block tconstruct:slime_grass 8 ffb12fca\n" +
+					"block tconstruct:slime_grass 14 fff2bf00\n" +
+					"block aether_legacy:aether_grass 0 ff6ca480\n" +
+					"block aether_legacy:enchanted_aether_grass 0 ffd2c376\n");
 		}
 		catch (IOException e)
 		{
@@ -259,27 +268,22 @@ public class BlockColours
 	public int getBiomeColour(String BlockName, int meta, String biomeName)
 	{
 		if (biomeName == null) biomeName = "";
-		int colourMultiplier = 0xffffff;
-		if (this.bcMap.containsKey(this.CombineBlockMeta(BlockName, meta)))
+		BlockData[] arr = bcMap.get(BlockName);
+		if (arr == null) return 0xffffff;
+		BlockData data = arr[meta & 0xf];
+		if (data == null) return 0xffffff;
+		switch (data.type)
 		{
-			switch (this.bcMap.get(this.CombineBlockMeta(BlockName, meta)).type)
-			{
-				case GRASS:
-					colourMultiplier = this.getGrassColourMultiplier(biomeName);
-					break;
-				case LEAVES:
-				case FOLIAGE:
-					colourMultiplier = this.getFoliageColourMultiplier(biomeName);
-					break;
-				case WATER:
-					colourMultiplier = this.getWaterColourMultiplier(biomeName);
-					break;
-				default:
-					colourMultiplier = 0xffffff;
-					break;
-			}
+			case GRASS:
+				return this.getGrassColourMultiplier(biomeName);
+			case LEAVES:
+			case FOLIAGE:
+				return this.getFoliageColourMultiplier(biomeName);
+			case WATER:
+				return this.getWaterColourMultiplier(biomeName);
+			default:
+				return 0xffffff;
 		}
-		return colourMultiplier;
 	}
 
 	public BlockType getBlockType(int BlockAndMeta)
@@ -291,14 +295,10 @@ public class BlockColours
 
 	public BlockType getBlockType(String BlockName, int meta)
 	{
-		String BlockAndMeta = this.CombineBlockMeta(BlockName, meta);
-		String BlockAndWildcard = this.CombineBlockMeta(BlockName, "*");
-		BlockData data = new BlockData();
-		if (this.bcMap.containsKey(BlockAndMeta))
-			data = this.bcMap.get(BlockAndMeta);
-		else if (this.bcMap.containsKey(BlockAndWildcard))
-			data = this.bcMap.get(BlockAndWildcard);
-		return data.type;
+		BlockData[] arr = bcMap.get(BlockName);
+		if (arr == null) return BlockType.NORMAL;
+		BlockData data = arr[meta & 0xf];
+		return (data != null) ? data.type : BlockType.NORMAL;
 	}
 
 	public int getColour(IBlockState BlockState)
@@ -314,14 +314,10 @@ public class BlockColours
 
 	public int getColour(String BlockName, int meta)
 	{
-		String BlockAndMeta = this.CombineBlockMeta(BlockName, meta);
-		String BlockAndWildcard = this.CombineBlockMeta(BlockName, "*");
-		BlockData data = new BlockData();
-		if (this.bcMap.containsKey(BlockAndMeta))
-			data = this.bcMap.get(BlockAndMeta);
-		else if (this.bcMap.containsKey(BlockAndWildcard))
-			data = this.bcMap.get(BlockAndWildcard);
-		return data.color;
+		BlockData[] arr = bcMap.get(BlockName);
+		if (arr == null) return 0;
+		BlockData data = arr[meta & 0xf];
+		return (data != null) ? data.color : 0;
 	}
 
 	public void loadFromFile(File f)
@@ -375,42 +371,36 @@ public class BlockColours
 	public void saveBlocks(Writer fout) throws IOException
 	{
 		fout.write("block * * 00000000\n");
-		String LastBlock = "";
-		List<String> colours = new ArrayList<String>();
-		for (Map.Entry<String, BlockData> entry : this.bcMap.entrySet())
+		for (Map.Entry<String, BlockData[]> entry : bcMap.entrySet())
 		{
-			String[] BlockAndMeta = entry.getKey().split(" ");
-			String block = BlockAndMeta[0];
-			String color = String.format("%08x", entry.getValue().color);
-			if (!LastBlock.equals(block) && !LastBlock.isEmpty())
+			String blockName = entry.getKey();
+			BlockData[] arr = entry.getValue();
+			List<String> colours = new ArrayList<>(16);
+			for (int i = 0; i < 16; i++)
 			{
-				String lineStart = String.format("block %s", LastBlock);
-				writeMinimalBlockLines(fout, lineStart, colours, "00000000");
-				colours.clear();
+				BlockData data = arr[i];
+				colours.add((data != null) ? String.format("%08x", data.color) : "00000000");
 			}
-			colours.add(color);
-			LastBlock = block;
+			String lineStart = String.format("block %s", blockName);
+			writeMinimalBlockLines(fout, lineStart, colours, "00000000");
 		}
 	}
 
 	public void saveBlockTypes(Writer fout) throws IOException
 	{
 		fout.write("blocktype * * normal\n");
-		String LastBlock = "";
-		List<String> blockTypes = new ArrayList<String>();
-		for (Map.Entry<String, BlockData> entry : this.bcMap.entrySet())
+		for (Map.Entry<String, BlockData[]> entry : bcMap.entrySet())
 		{
-			String[] BlockAndMeta = entry.getKey().split(" ");
-			String block = BlockAndMeta[0];
-			String Type = getBlockTypeAsString(entry.getValue().type);
-			if (!LastBlock.equals(block) && !LastBlock.isEmpty())
+			String blockName = entry.getKey();
+			BlockData[] arr = entry.getValue();
+			List<String> types = new ArrayList<>(16);
+			for (int i = 0; i < 16; i++)
 			{
-				String lineStart = String.format("blocktype %s", LastBlock);
-				writeMinimalBlockLines(fout, lineStart, blockTypes, getBlockTypeAsString(BlockType.NORMAL));
-				blockTypes.clear();
+				BlockData data = arr[i];
+				types.add((data != null) ? getBlockTypeAsString(data.type) : "normal");
 			}
-			blockTypes.add(Type);
-			LastBlock = block;
+			String lineStart = String.format("blocktype %s", blockName);
+			writeMinimalBlockLines(fout, lineStart, types, "normal");
 		}
 	}
 
@@ -452,45 +442,51 @@ public class BlockColours
 
 	public void setBlockType(String BlockName, String meta, BlockType type)
 	{
-		String BlockAndMeta = this.CombineBlockMeta(BlockName, meta);
+		BlockData[] arr = bcMap.get(BlockName);
+		if (arr == null)
+		{
+			arr = new BlockData[16];
+			bcMap.put(BlockName, arr);
+		}
 		if (meta.equals("*"))
 		{
 			for (int i = 0; i < 16; i++)
-				this.setBlockType(BlockName, String.valueOf(i), type);
-			return;
-		}
-		if (this.bcMap.containsKey(BlockAndMeta))
-		{
-			BlockData data = this.bcMap.get(BlockAndMeta);
-			data.type = type;
-			data.color = adjustBlockColourFromType(BlockName, meta, type, data.color);
+			{
+				if (arr[i] == null) arr[i] = new BlockData();
+				arr[i].type = type;
+				arr[i].color = adjustBlockColourFromType(BlockName, String.valueOf(i), type, arr[i].color);
+			}
 		}
 		else
 		{
-			BlockData data = new BlockData();
-			data.type = type;
-			this.bcMap.put(BlockAndMeta, data);
+			int m = Integer.parseInt(meta) & 0xf;
+			if (arr[m] == null) arr[m] = new BlockData();
+			arr[m].type = type;
+			arr[m].color = adjustBlockColourFromType(BlockName, meta, type, arr[m].color);
 		}
 	}
 
 	public void setColour(String BlockName, String meta, int colour)
 	{
-		String BlockAndMeta = this.CombineBlockMeta(BlockName, meta);
+		BlockData[] arr = bcMap.get(BlockName);
+		if (arr == null)
+		{
+			arr = new BlockData[16];
+			bcMap.put(BlockName, arr);
+		}
 		if (meta.equals("*"))
 		{
 			for (int i = 0; i < 16; i++)
-				this.setColour(BlockName, String.valueOf(i), colour);
-			return;
-		}
-		if (this.bcMap.containsKey(BlockAndMeta))
-		{
-			this.bcMap.get(BlockAndMeta).color = colour;
+			{
+				if (arr[i] == null) arr[i] = new BlockData();
+				arr[i].color = colour;
+			}
 		}
 		else
 		{
-			BlockData data = new BlockData();
-			data.color = colour;
-			this.bcMap.put(BlockAndMeta, data);
+			int m = Integer.parseInt(meta) & 0xf;
+			if (arr[m] == null) arr[m] = new BlockData();
+			arr[m].color = colour;
 		}
 	}
 

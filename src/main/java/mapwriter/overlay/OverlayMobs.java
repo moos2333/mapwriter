@@ -14,7 +14,6 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AbstractHorse;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
 
 public class OverlayMobs
 {
@@ -67,21 +66,22 @@ public class OverlayMobs
     {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.world == null || mc.player == null) return;
-
         cache.clear();
         this.playerY = mc.player.posY;
-
-        AxisAlignedBB aabb = new AxisAlignedBB(
-                mc.player.posX - MAX_RANGE, 0, mc.player.posZ - MAX_RANGE,
-                mc.player.posX + MAX_RANGE, 256, mc.player.posZ + MAX_RANGE
-        );
-
-        List<Entity> entities = mc.world.getEntitiesWithinAABB(Entity.class, aabb);
-        for (Entity e : entities)
+        double px = mc.player.posX;
+        double pz = mc.player.posZ;
+        final int rangeSq = MAX_RANGE * MAX_RANGE;
+        final int maxYDiff = MAX_Y_DIFF;
+        List<Entity> list = mc.world.loadedEntityList;
+        for (Entity e : list)
         {
             if (e == mc.player) continue;
             if (!(e instanceof EntityLiving)) continue;
-
+            double dx = e.posX - px;
+            double dz = e.posZ - pz;
+            if (dx * dx + dz * dz > rangeSq) continue;
+            double dy = e.posY - this.playerY;
+            if (Math.abs(dy) >= maxYDiff) continue;
             int color = getEntityColor(e);
             if (color != 0)
             {
@@ -96,7 +96,6 @@ public class OverlayMobs
         {
             return 0xFFFFDD44;
         }
-
         if (e instanceof EntityTameable && ((EntityTameable) e).isTamed())
         {
             return 0xFF66DD66;
@@ -105,12 +104,10 @@ public class OverlayMobs
         {
             return 0xFF66DD66;
         }
-
         if (e instanceof IMob)
         {
             return 0xFFDD5544;
         }
-
         return 0xFFDDDDDD;
     }
 
@@ -124,20 +121,16 @@ public class OverlayMobs
     public void draw(MapMode mapMode, MapView mapView)
     {
         if (!enabled || cache.isEmpty()) return;
-
         int tx = mapMode.getXTranslation();
         int ty = mapMode.getYTranslation();
-
         for (MobData data : cache)
         {
             Point.Double rel = mapMode.getClampedScreenXY(mapView, data.x, data.z);
             int screenX = tx + (int)rel.x;
             int screenY = ty + (int)rel.y;
-
             int radius = (data.color == 0xFFFFDD44) ? PLAYER_DOT_RADIUS : DOT_RADIUS;
             float alpha = getAlpha(data.y);
             if (alpha <= 0.01f) continue;
-
             int r = (data.color >> 16) & 0xFF;
             int g = (data.color >> 8) & 0xFF;
             int b = data.color & 0xFF;
