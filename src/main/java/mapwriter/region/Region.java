@@ -99,8 +99,7 @@ public class Region
 
 		zoomDir.mkdirs();
 
-		String filename = String.format("%d.%d.png", this.x >> Region.SHIFT + this.zoomLevel, this.z >> Region.SHIFT +
-																										this.zoomLevel);
+		String filename = (this.x >> (Region.SHIFT + this.zoomLevel)) + "." + (this.z >> (Region.SHIFT + this.zoomLevel)) + ".png";
 
 		return new File(zoomDir, filename);
 	}

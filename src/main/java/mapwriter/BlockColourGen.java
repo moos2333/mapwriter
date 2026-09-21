@@ -1,8 +1,5 @@
 package mapwriter;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import mapwriter.region.BlockColours;
 import mapwriter.util.Logging;
 import mapwriter.util.Render;
@@ -69,7 +66,6 @@ public class BlockColourGen
 		int e_count = 0;
 		int b_count = 0;
 		int s_count = 0;
-		Set<String> warnedBlocks = new HashSet<String>();
 
 		for (Object oblock : Block.REGISTRY)
 		{
@@ -96,10 +92,6 @@ public class BlockColourGen
 						// requesting block texture for %03x:%x",
 						// blockID, dv);
 						// e.printStackTrace();
-						if (warnedBlocks.add(blockName))
-						{
-							Logging.logWarning("genBlockColours: %s meta=%d: %s", blockName, dv, e.toString());
-						}
 						e_count++;
 					}
 
