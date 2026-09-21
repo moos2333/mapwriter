@@ -56,6 +56,7 @@ public class BlockColours
 	private Map<String, Integer> grassCache = new HashMap<String, Integer>();
 	private Map<String, Integer> foliageCache = new HashMap<String, Integer>();
 	private Map<String, Integer> waterCache = new HashMap<String, Integer>();
+	private Map<Integer, String> biomeNameCache = new HashMap<Integer, String>();
 
 	public BlockColours() {}
 
@@ -253,9 +254,14 @@ public class BlockColours
 
 	public int getBiomeColour(IBlockState BlockState, int biomeId)
 	{
-		Biome biome = Biome.getBiomeForId(biomeId);
-		if (biomeId == 255) biome = Biomes.PLAINS;
-		String biomeName = (biome != null) ? biome.getBiomeName() : "";
+		String biomeName = this.biomeNameCache.get(biomeId);
+		if (biomeName == null)
+		{
+			Biome biome = Biome.getBiomeForId(biomeId);
+			if (biomeId == 255) biome = Biomes.PLAINS;
+			biomeName = (biome != null) ? biome.getBiomeName() : "";
+			this.biomeNameCache.put(biomeId, biomeName);
+		}
 		Block block = BlockState.getBlock();
 		if (block == null || block.delegate == null || block.delegate.name() == null)
 		{
@@ -492,8 +498,9 @@ public class BlockColours
 
 	private int getFoliageColourMultiplier(String biomeName)
 	{
-		if (foliageCache.containsKey(biomeName))
-			return foliageCache.get(biomeName);
+		Integer cached = foliageCache.get(biomeName);
+		if (cached != null)
+			return cached;
 		int multiplier = 0xffffff;
 		BiomeData data = this.biomeMap.get(biomeName);
 		if (data != null) multiplier = data.foliageMultiplier;
@@ -503,8 +510,9 @@ public class BlockColours
 
 	private int getGrassColourMultiplier(String biomeName)
 	{
-		if (grassCache.containsKey(biomeName))
-			return grassCache.get(biomeName);
+		Integer cached = grassCache.get(biomeName);
+		if (cached != null)
+			return cached;
 		int multiplier = 0xffffff;
 		BiomeData data = this.biomeMap.get(biomeName);
 		if (data != null) multiplier = data.grassMultiplier;
@@ -514,8 +522,9 @@ public class BlockColours
 
 	private int getWaterColourMultiplier(String biomeName)
 	{
-		if (waterCache.containsKey(biomeName))
-			return waterCache.get(biomeName);
+		Integer cached = waterCache.get(biomeName);
+		if (cached != null)
+			return cached;
 		int multiplier = 0xffffff;
 		BiomeData data = this.biomeMap.get(biomeName);
 		if (data != null) multiplier = data.waterMultiplier;

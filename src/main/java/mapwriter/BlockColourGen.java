@@ -5,6 +5,7 @@ import mapwriter.util.Logging;
 import mapwriter.util.Render;
 import mapwriter.util.Texture;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -25,6 +26,16 @@ import net.minecraft.world.biome.Biome;
 
 public class BlockColourGen
 {
+	private static final String[] META_STRINGS = new String[16];
+
+	static
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			META_STRINGS[i] = String.valueOf(i);
+		}
+	}
+
 	public static void genBlockColours(BlockColours bc)
 	{
 
@@ -59,13 +70,15 @@ public class BlockColourGen
 		for (Object oblock : Block.REGISTRY)
 		{
 			Block block = (Block) oblock;
-			int blockID = Block.getIdFromBlock(block);
+			String blockName = block.delegate.name().toString();
+			IBlockState defaultState = block.getDefaultState();
+			EnumBlockRenderType renderType = block.getRenderType(defaultState);
 
 			for (int dv = 0; dv < 16; dv++)
 			{
 				int blockColour = 0;
 
-				if (block != null && block.getRenderType(block.getDefaultState()) != EnumBlockRenderType.INVISIBLE)
+				if (renderType != EnumBlockRenderType.INVISIBLE)
 				{
 
 					TextureAtlasSprite icon = null;
@@ -79,6 +92,8 @@ public class BlockColourGen
 						// requesting block texture for %03x:%x",
 						// blockID, dv);
 						// e.printStackTrace();
+						Logging.logWarning("genBlockColours: %s meta=%d: %s",
+								blockName, dv, e.toString());
 						e_count++;
 					}
 
@@ -97,16 +112,6 @@ public class BlockColourGen
 						else
 						{
 							blockColour = getIconMapColour(icon, terrainTexture);
-							// request icon with meta 16, carpenterblocks uses
-							// this method to get the real texture
-							// this makes the carpenterblocks render as brown
-							// blocks on the map
-							if (Block.REGISTRY.getNameForObject(block).getNamespace().contains("CarpentersBlocks"))
-							{
-								// icon = block.getIcon(1, 16);
-								// blockColour = getIconMapColour(icon,
-								// terrainTexture);
-							}
 
 							u1Last = u1;
 							u2Last = u2;
@@ -117,11 +122,13 @@ public class BlockColourGen
 						}
 					}
 				}
-				bc.setColour(block.delegate.name().toString(), String.valueOf(dv), blockColour);
+				bc.setColour(blockName, META_STRINGS[dv], blockColour);
 			}
 		}
 
 		Logging.log("processed %d block textures, %d skipped, %d exceptions", b_count, s_count, e_count);
+
+		terrainTexture.releasePixelBuffer();
 
 		genBiomeColours(bc);
 	}

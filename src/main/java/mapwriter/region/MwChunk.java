@@ -83,7 +83,7 @@ public class MwChunk implements IChunk
 
 	public static MwChunk read(int x, int z, int dimension, RegionFileCache regionFileCache)
 	{
-		Boolean flag = true;
+		boolean flag = true;
 		byte[] biomeArray = null;
 		ExtendedBlockStorage[] data = new ExtendedBlockStorage[16];
 		Map<BlockPos, TileEntity> TileEntityMap = new HashMap<BlockPos, TileEntity>();
@@ -321,11 +321,10 @@ public class MwChunk implements IChunk
 		compound.setInteger("zPos", this.z);
 		ExtendedBlockStorage[] aextendedblockstorage = this.dataArray;
 		NBTTagList nbttaglist = new NBTTagList();
-		boolean flag = true;
 
 		for (ExtendedBlockStorage extendedblockstorage : aextendedblockstorage)
 		{
-			if (extendedblockstorage != Chunk.NULL_BLOCK_STORAGE)
+			if (extendedblockstorage != null && extendedblockstorage != Chunk.NULL_BLOCK_STORAGE)
 			{
 				NBTTagCompound nbttagcompound = new NBTTagCompound();
 				nbttagcompound.setByte("Y", (byte) (extendedblockstorage.getYLocation() >> 4 & 255));

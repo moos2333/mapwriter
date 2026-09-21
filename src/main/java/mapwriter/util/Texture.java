@@ -1,5 +1,6 @@
 package mapwriter.util;
 
+import java.lang.reflect.Method;
 import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.GL11;
@@ -15,6 +16,25 @@ public class Texture
 	public final int w;
 	public final int h;
 	private final IntBuffer pixelBuf;
+
+	private static final Method CLEANER_METHOD;
+	private static final Method CLEAN_METHOD;
+
+	static
+	{
+		Method getCleaner = null;
+		Method clean = null;
+		try
+		{
+			getCleaner = Class.forName("sun.nio.ch.DirectBuffer").getMethod("cleaner");
+			clean = Class.forName("sun.misc.Cleaner").getMethod("clean");
+		}
+		catch (Throwable t)
+		{
+		}
+		CLEANER_METHOD = getCleaner;
+		CLEAN_METHOD = clean;
+	}
 
 	// create from existing texture
 	public Texture(int id)
@@ -70,6 +90,31 @@ public class Texture
 				Logging.log("MwTexture.close: null pointer exception (texture %d)", this.id);
 			}
 			this.id = 0;
+		}
+		freeDirectBuffer(this.pixelBuf);
+	}
+
+	public void releasePixelBuffer()
+	{
+		freeDirectBuffer(this.pixelBuf);
+	}
+
+	private static void freeDirectBuffer(IntBuffer buffer)
+	{
+		if (buffer == null || !buffer.isDirect() || CLEANER_METHOD == null || CLEAN_METHOD == null)
+		{
+			return;
+		}
+		try
+		{
+			Object cleaner = CLEANER_METHOD.invoke(buffer);
+			if (cleaner != null)
+			{
+				CLEAN_METHOD.invoke(cleaner);
+			}
+		}
+		catch (Throwable t)
+		{
 		}
 	}
 

@@ -35,7 +35,7 @@ import net.minecraftforge.common.DimensionManager;
 
 public class Mw
 {
-	private static Mw instance;
+	private static volatile Mw instance;
 
 	public static Mw getInstance()
 	{
@@ -409,8 +409,9 @@ public class Mw
 
 		if (this.mc.world != null)
 		{
-			if (!this.mc.world.getChunk(new BlockPos(this.playerX, 0, this.playerZ)).isEmpty())
-				this.playerBiome = this.mc.world.getBiomeForCoordsBody(new BlockPos(this.playerX, 0, this.playerZ)).getBiomeName();
+			BlockPos playerPos = new BlockPos(this.playerX, 0, this.playerZ);
+			if (!this.mc.world.getChunk(playerPos).isEmpty())
+				this.playerBiome = this.mc.world.getBiomeForCoordsBody(playerPos).getBiomeName();
 		}
 
 		this.playerHeading = Math.toRadians(this.mc.player.rotationYaw) + Math.PI / 2.0D;
