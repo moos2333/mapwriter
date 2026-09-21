@@ -569,9 +569,10 @@ public class MarkerManager
 		this.groupList.clear();
 		this.groupList.add("none");
 		this.groupList.add("all");
+		boolean showAll = this.visibleGroupName.equals("all");
 		for (Marker marker : this.markerList)
 		{
-			if (marker.groupName.equals(this.visibleGroupName) || this.visibleGroupName.equals("all"))
+			if (showAll || marker.groupName.equals(this.visibleGroupName))
 			{
 				this.visibleMarkerList.add(marker);
 			}

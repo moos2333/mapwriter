@@ -80,7 +80,7 @@ public class RegionFileCache
 		if (dimension != 0)
 			dir = new File(dir, "DIM" + dimension);
 		dir = new File(dir, "region");
-		String filename = String.format("r.%d.%d.mca", x >> Region.SHIFT, z >> Region.SHIFT);
+		String filename = "r." + (x >> Region.SHIFT) + "." + (z >> Region.SHIFT) + ".mca";
 		return new File(dir, filename);
 	}
 
