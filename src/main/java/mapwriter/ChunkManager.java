@@ -18,6 +18,8 @@ public class ChunkManager
 {
 	private static final int VISIBLE_FLAG = 0x01;
 	private static final int VIEWED_FLAG = 0x02;
+	private static final int BACKLOG_THROTTLE_LOW = 100;
+	private static final int BACKLOG_THROTTLE_HIGH = 200;
 
 	// create MwChunk from Minecraft chunk.
 	// only MwChunk's should be used in the background thread.
@@ -112,6 +114,15 @@ public class ChunkManager
 	public void updateSurfaceChunks()
 	{
 		int chunksToUpdate = Math.min(this.chunkMap.size(), Config.chunksPerTick);
+		int backlog = this.mw.executor.tasksRemaining();
+		if (backlog > BACKLOG_THROTTLE_HIGH)
+		{
+			chunksToUpdate = Math.min(chunksToUpdate, 1);
+		}
+		else if (backlog > BACKLOG_THROTTLE_LOW)
+		{
+			chunksToUpdate = Math.min(chunksToUpdate, 2);
+		}
 		for (int i = 0; i < chunksToUpdate; i++)
 		{
 			Map.Entry<Chunk, Integer> entry = this.chunkMap.getNextEntry();
