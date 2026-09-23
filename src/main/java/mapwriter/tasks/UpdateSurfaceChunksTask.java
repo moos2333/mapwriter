@@ -2,7 +2,6 @@ package mapwriter.tasks;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import mapwriter.Mw;
 import mapwriter.map.MapTexture;
@@ -12,11 +11,11 @@ import net.minecraft.util.math.ChunkPos;
 
 public class UpdateSurfaceChunksTask extends Task
 {
-	private static Map chunksUpdating = new HashMap<Long, UpdateSurfaceChunksTask>();
+	private static Map<Long, UpdateSurfaceChunksTask> chunksUpdating = new HashMap<Long, UpdateSurfaceChunksTask>();
 	private MwChunk chunk;
 	private RegionManager regionManager;
 	private MapTexture mapTexture;
-	private AtomicBoolean Running = new AtomicBoolean();
+	private volatile boolean Running = false;
 
 	public UpdateSurfaceChunksTask(Mw mw, MwChunk chunk)
 	{
@@ -30,23 +29,20 @@ public class UpdateSurfaceChunksTask extends Task
 	{
 		Long coords = ChunkPos.asLong(this.chunk.x, this.chunk.z);
 
-		if (!UpdateSurfaceChunksTask.chunksUpdating.containsKey(coords))
+		UpdateSurfaceChunksTask task2 = UpdateSurfaceChunksTask.chunksUpdating.get(coords);
+		if (task2 == null)
 		{
 			UpdateSurfaceChunksTask.chunksUpdating.put(coords, this);
 			return false;
 		}
+		if (!task2.Running)
+		{
+			task2.UpdateChunkData(this.chunk);
+		}
 		else
 		{
-			UpdateSurfaceChunksTask task2 = (UpdateSurfaceChunksTask) UpdateSurfaceChunksTask.chunksUpdating.get(coords);
-			if (task2.Running.get() == false)
-			{
-				task2.UpdateChunkData(this.chunk);
-			}
-			else
-			{
-				UpdateSurfaceChunksTask.chunksUpdating.put(coords, this);
-				return false;
-			}
+			UpdateSurfaceChunksTask.chunksUpdating.put(coords, this);
+			return false;
 		}
 		return true;
 	}
@@ -56,13 +52,13 @@ public class UpdateSurfaceChunksTask extends Task
 	{
 		Long coords = this.chunk.getCoordIntPair();
 		UpdateSurfaceChunksTask.chunksUpdating.remove(coords);
-		this.Running.set(false);
+		this.Running = false;
 	}
 
 	@Override
 	public void run()
 	{
-		this.Running.set(true);
+		this.Running = true;
 		if (this.chunk != null)
 		{
 			// update the chunk in the region pixels

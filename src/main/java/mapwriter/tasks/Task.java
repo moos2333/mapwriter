@@ -20,7 +20,7 @@ public abstract class Task implements Runnable
 
 	public final boolean isDone()
 	{
-		return this.future != null ? this.future.isDone() : false;
+		return this.future != null && this.future.isDone();
 	}
 
 	// called by processTaskQueue after the thread completes
@@ -37,7 +37,14 @@ public abstract class Task implements Runnable
 			catch (ExecutionException e)
 			{
 				Throwable rootException = e.getCause();
-				rootException.printStackTrace();
+				if (rootException != null)
+				{
+					rootException.printStackTrace();
+				}
+				else
+				{
+					e.printStackTrace();
+				}
 			}
 			catch (Exception e)
 			{

@@ -222,7 +222,7 @@ public class CircularHashMap<K, V>
 
 	public Collection<V> values()
 	{
-		Collection<V> list = new ArrayList<V>();
+		Collection<V> list = new ArrayList<V>(this.nodeMap.size());
 		for (Node node : this.nodeMap.values())
 		{
 			list.add(node.value);

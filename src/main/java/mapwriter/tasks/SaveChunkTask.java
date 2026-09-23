@@ -1,7 +1,6 @@
 package mapwriter.tasks;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import mapwriter.region.MwChunk;
 import mapwriter.region.RegionManager;
@@ -11,7 +10,7 @@ public class SaveChunkTask extends Task
 	private static HashMap<Long, SaveChunkTask> chunksUpdating = new HashMap<Long, SaveChunkTask>();
 	private MwChunk chunk;
 	private RegionManager regionManager;
-	private AtomicBoolean Running = new AtomicBoolean();
+	private volatile boolean Running = false;
 
 	public SaveChunkTask(MwChunk chunk, RegionManager regionManager)
 	{
@@ -24,23 +23,20 @@ public class SaveChunkTask extends Task
 	{
 		Long coords = this.chunk.getCoordIntPair();
 
-		if (!SaveChunkTask.chunksUpdating.containsKey(coords))
+		SaveChunkTask task2 = SaveChunkTask.chunksUpdating.get(coords);
+		if (task2 == null)
 		{
 			SaveChunkTask.chunksUpdating.put(coords, this);
 			return false;
 		}
+		if (!task2.Running)
+		{
+			task2.UpdateChunkData(this.chunk, this.regionManager);
+		}
 		else
 		{
-			SaveChunkTask task2 = SaveChunkTask.chunksUpdating.get(coords);
-			if (task2.Running.get() == false)
-			{
-				task2.UpdateChunkData(this.chunk, this.regionManager);
-			}
-			else
-			{
-				SaveChunkTask.chunksUpdating.put(coords, this);
-				return false;
-			}
+			SaveChunkTask.chunksUpdating.put(coords, this);
+			return false;
 		}
 		return true;
 	}
@@ -50,13 +46,13 @@ public class SaveChunkTask extends Task
 	{
 		Long coords = this.chunk.getCoordIntPair();
 		SaveChunkTask.chunksUpdating.remove(coords);
-		this.Running.set(false);
+		this.Running = false;
 	}
 
 	@Override
 	public void run()
 	{
-		this.Running.set(true);
+		this.Running = true;
 		this.chunk.write(this.regionManager.regionFileCache);
 	}
 

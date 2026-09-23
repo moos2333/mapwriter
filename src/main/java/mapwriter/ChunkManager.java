@@ -3,8 +3,6 @@ package mapwriter;
 import java.util.Arrays;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-
 import mapwriter.config.Config;
 import mapwriter.region.MwChunk;
 import mapwriter.tasks.SaveChunkTask;
@@ -27,11 +25,11 @@ public class ChunkManager
 	// <-- done
 	public static MwChunk copyToMwChunk(Chunk chunk)
 	{
-		Map<BlockPos, TileEntity> TileEntityMap = Maps.newHashMap();
-		TileEntityMap = Utils.checkedMapByCopy(chunk.getTileEntityMap(), BlockPos.class, TileEntity.class, false);
-		byte[] biomeArray = Arrays.copyOf(chunk.getBiomeArray(), chunk.getBiomeArray().length);
-		ExtendedBlockStorage[] dataArray =
-				Arrays.copyOf(chunk.getBlockStorageArray(), chunk.getBlockStorageArray().length);
+		Map<BlockPos, TileEntity> TileEntityMap = Utils.checkedMapByCopy(chunk.getTileEntityMap(), BlockPos.class, TileEntity.class, false);
+		byte[] biomeSrc = chunk.getBiomeArray();
+		byte[] biomeArray = Arrays.copyOf(biomeSrc, biomeSrc.length);
+		ExtendedBlockStorage[] dataSrc = chunk.getBlockStorageArray();
+		ExtendedBlockStorage[] dataArray = Arrays.copyOf(dataSrc, dataSrc.length);
 
 		return new MwChunk(
 				chunk.x,
@@ -114,7 +112,6 @@ public class ChunkManager
 	public void updateSurfaceChunks()
 	{
 		int chunksToUpdate = Math.min(this.chunkMap.size(), Config.chunksPerTick);
-		MwChunk[] chunkArray = new MwChunk[chunksToUpdate];
 		for (int i = 0; i < chunksToUpdate; i++)
 		{
 			Map.Entry<Chunk, Integer> entry = this.chunkMap.getNextEntry();
@@ -137,42 +134,21 @@ public class ChunkManager
 
 				if ((flags & ChunkManager.VISIBLE_FLAG) != 0)
 				{
-					chunkArray[i] = copyToMwChunk(chunk);
-					this.mw.executor.addTask(new UpdateSurfaceChunksTask(this.mw, chunkArray[i]));
-				}
-				else
-				{
-					chunkArray[i] = null;
+					this.mw.executor.addTask(new UpdateSurfaceChunksTask(this.mw, copyToMwChunk(chunk)));
 				}
 			}
 		}
-
-		// this.mw.executor.addTask(new UpdateSurfaceChunksTask(this.mw,
-		// chunkArray));
 	}
 
 	public void updateUndergroundChunks()
 	{
-		int chunkArrayX = (this.mw.playerXInt >> 4) - 1;
-		int chunkArrayZ = (this.mw.playerZInt >> 4) - 1;
-		MwChunk[] chunkArray = new MwChunk[9];
-		for (int z = 0; z < 3; z++)
-		{
-			for (int x = 0; x < 3; x++)
-			{
-				Chunk chunk = this.mw.mc.world.getChunk(chunkArrayX + x, chunkArrayZ + z);
-				if (!chunk.isEmpty())
-				{
-					chunkArray[z * 3 + x] = copyToMwChunk(chunk);
-				}
-			}
-		}
 	}
 
 	private void addSaveChunkTask(Chunk chunk)
 	{
-		if (Minecraft.getMinecraft().isSingleplayer() && Config.regionFileOutputEnabledMP ||
-				!Minecraft.getMinecraft().isSingleplayer() && Config.regionFileOutputEnabledSP)
+		boolean singleplayer = Minecraft.getMinecraft().isSingleplayer();
+		if (singleplayer && Config.regionFileOutputEnabledMP ||
+				!singleplayer && Config.regionFileOutputEnabledSP)
 		{
 			if (!chunk.isEmpty())
 			{

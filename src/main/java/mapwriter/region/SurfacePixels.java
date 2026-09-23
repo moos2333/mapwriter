@@ -111,7 +111,6 @@ public class SurfacePixels
 		if (this.pixels == null)
 		{
 			this.pixels = new int[Region.SIZE * Region.SIZE];
-			this.clear();
 		}
 		return this.pixels;
 	}
@@ -134,10 +133,10 @@ public class SurfacePixels
 		// TODO: refactor so that blockColours can be accessed
 		// more directly
 		ChunkRender.renderSurface(this.region.regionManager.blockColours, chunk, pixels, offset, Region.SIZE, chunk.dimension == -1 // use
-		// ceiling
-		// algorithm
-		// for
-		// nether
+				// ceiling
+				// algorithm
+				// for
+				// nether
 		);
 		this.region.updateZoomLevels(x, z, MwChunk.SIZE, MwChunk.SIZE);
 		this.updateCount++;
@@ -151,11 +150,13 @@ public class SurfacePixels
 		int[] dstPixels = this.getOrAllocatePixels();
 		for (int j = 0; j < dstH; j++)
 		{
+			int srcRowOffset = ((srcZ + j * 2) << Region.SHIFT) + srcX;
+			int dstRowOffset = ((dstZ + j) << Region.SHIFT) + dstX;
 			for (int i = 0; i < dstW; i++)
 			{
-				int srcOffset = (srcZ + j * 2 << Region.SHIFT) + srcX + i * 2;
+				int srcOffset = srcRowOffset + i * 2;
 				int dstPixel = getAverageOfPixelQuad(srcPixels, srcOffset, Region.SIZE);
-				dstPixels[(dstZ + j << Region.SHIFT) + dstX + i] = dstPixel;
+				dstPixels[dstRowOffset + i] = dstPixel;
 			}
 		}
 		this.updateCount++;

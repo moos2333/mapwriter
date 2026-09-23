@@ -50,6 +50,7 @@ import mapwriter.util.Logging;
 
 public class BackgroundExecutor
 {
+	private static final int MAX_QUEUE_SIZE = 500;
 
 	private ExecutorService executor;
 	private LinkedList<Task> taskQueue;
@@ -67,6 +68,10 @@ public class BackgroundExecutor
 	{
 		if (!this.closed)
 		{
+			if (this.taskQueue.size() >= MAX_QUEUE_SIZE)
+			{
+				return this.closed;
+			}
 			if (!task.CheckForDuplicate())
 			{
 				Future<?> future = this.executor.submit(task);
@@ -75,12 +80,15 @@ public class BackgroundExecutor
 			}
 
 			// bit for diagnostics on task left to optimize code
-			if (this.tasksRemaining() > 500 && this.doDiag)
+			if (this.tasksRemaining() > 500)
 			{
-				this.doDiag = false;
-				Logging.logError("Taskque went over 500 starting diagnostic");
-				this.taskLeftPerType();
-				Logging.logError("End of diagnostic");
+				if (this.doDiag)
+				{
+					this.doDiag = false;
+					Logging.logError("Taskque went over 500 starting diagnostic");
+					this.taskLeftPerType();
+					Logging.logError("End of diagnostic");
+				}
 			}
 			else
 			{
@@ -169,27 +177,18 @@ public class BackgroundExecutor
 
 	private void taskLeftPerType()
 	{
-		HashMap<String, Object> tasksLeft = new HashMap<String, Object>();
+		HashMap<String, Integer> tasksLeft = new HashMap<String, Integer>();
 
 		for (Task t : this.taskQueue)
 		{
 			String className = t.getClass().toString();
-			if (tasksLeft.containsKey(className))
-			{
-				tasksLeft.put(className, (Integer) tasksLeft.get(className) + 1);
-			}
-			else
-			{
-				tasksLeft.put(className, 1);
-			}
+			Integer count = tasksLeft.get(className);
+			tasksLeft.put(className, count != null ? count + 1 : 1);
 		}
 
-		for (Map.Entry<String, Object> entry : tasksLeft.entrySet())
+		for (Map.Entry<String, Integer> entry : tasksLeft.entrySet())
 		{
-			String key = entry.getKey();
-			Object value = entry.getValue();
-
-			Logging.log("waiting for %d %s to finish...", value, key);
+			Logging.log("waiting for %d %s to finish...", entry.getValue(), entry.getKey());
 		}
 	}
 }
