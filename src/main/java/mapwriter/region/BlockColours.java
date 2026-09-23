@@ -116,7 +116,12 @@ public class BlockColours
 					"block aether_legacy:enchanted_aether_grass 0 ffd2c376\n" +
 					"block tconstruct:slime_leaves 0 ff37ffaa\n" +
 					"block tconstruct:slime_leaves 1 ffdf3bff\n" +
-					"block tconstruct:slime_leaves 2 ffffc900\n");
+					"block tconstruct:slime_leaves 2 ffffc900\n" +
+					"block candymod:gummy_block 0 ffe8a0a0\n" +
+					"block candymod:gummy_block 1 ffe8c090\n" +
+					"block candymod:gummy_block 2 ffe8e0a0\n" +
+					"block candymod:gummy_block 3 ffd8d8d8\n" +
+					"block candymod:gummy_block 4 ffa0e8a0\n");
 		}
 		catch (IOException e)
 		{
