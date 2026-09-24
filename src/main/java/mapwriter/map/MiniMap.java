@@ -64,10 +64,10 @@ public class MiniMap
 		if (this.currentMap != null)
 		{
 			this.currentMap.draw();
-		}
-		if (Config.showMobOverlay && this.currentMap != null)
-		{
-			this.mobOverlay.draw(this.currentMap.getMapMode(), this.view);
+			if (Config.showMobOverlay)
+			{
+				this.mobOverlay.draw(this.currentMap.getMapMode(), this.view);
+			}
 		}
 	}
 
