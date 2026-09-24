@@ -16,6 +16,7 @@ public class Texture
 	public final int w;
 	public final int h;
 	private final IntBuffer pixelBuf;
+	private volatile boolean released = false;
 
 	private static final Method CLEANER_METHOD;
 	private static final Method CLEAN_METHOD;
@@ -92,11 +93,13 @@ public class Texture
 			this.id = 0;
 		}
 		freeDirectBuffer(this.pixelBuf);
+		this.released = true;
 	}
 
 	public void releasePixelBuffer()
 	{
 		freeDirectBuffer(this.pixelBuf);
+		this.released = true;
 	}
 
 	private static void freeDirectBuffer(IntBuffer buffer)
@@ -120,6 +123,7 @@ public class Texture
 
 	public synchronized void fillRect(int x, int y, int w, int h, int colour)
 	{
+		if (this.released) return;
 		int offset = y * this.w + x;
 		for (int j = 0; j < h; j++)
 		{
@@ -133,6 +137,7 @@ public class Texture
 
 	public synchronized int getRGB(int x, int y)
 	{
+		if (this.released) return 0;
 		return this.pixelBuf.get(y * this.w + x);
 	}
 
@@ -140,6 +145,7 @@ public class Texture
 	// buffer to the array 'pixels'.
 	public synchronized void getRGB(int x, int y, int w, int h, int[] pixels, int offset, int scanSize, TextureAtlasSprite icon)
 	{
+		if (this.released) return;
 		int bufOffset = y * this.w + x;
 		for (int i = 0; i < h; i++)
 		{
@@ -160,6 +166,7 @@ public class Texture
 
 	public void pixelBufPut(int pixel)
 	{
+		if (this.released) return;
 		this.pixelBuf.put(pixel);
 	}
 
@@ -180,11 +187,13 @@ public class Texture
 
 	public void setPixelBufPosition(int i)
 	{
+		if (this.released) return;
 		this.pixelBuf.position(i);
 	}
 
 	public synchronized void setRGB(int x, int y, int colour)
 	{
+		if (this.released) return;
 		this.pixelBuf.put(y * this.w + x, colour);
 	}
 
@@ -192,6 +201,7 @@ public class Texture
 	// 'pixels' to the pixel buffer.
 	public synchronized void setRGB(int x, int y, int w, int h, int[] pixels, int offset, int scanSize)
 	{
+		if (this.released) return;
 		int bufOffset = y * this.w + x;
 		for (int i = 0; i < h; i++)
 		{
@@ -212,6 +222,7 @@ public class Texture
 
 	public synchronized void updateTexture()
 	{
+		if (this.released) return;
 		this.bind();
 		this.pixelBuf.position(0);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, this.w, this.h, 0, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, this.pixelBuf);
@@ -220,6 +231,7 @@ public class Texture
 	// update texture from pixels in pixelBuf
 	public synchronized void updateTextureArea(int x, int y, int w, int h)
 	{
+		if (this.released) return;
 		try
 		{
 			this.bind();

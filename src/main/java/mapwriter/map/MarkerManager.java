@@ -111,6 +111,67 @@ public class MarkerManager
 		}
 	}
 
+	private void migrateLegacyMarkers(File worldDir)
+	{
+		File legacyFile = new File(worldDir, "markers.cfg");
+		if (!legacyFile.isFile())
+		{
+			return;
+		}
+		File[] existingDimFiles = worldDir.listFiles((dir, name) -> name.startsWith("markers_dim") && name.endsWith(".cfg"));
+		if (existingDimFiles != null && existingDimFiles.length > 0)
+		{
+			return;
+		}
+		Logging.logInfo("Migrating legacy markers.cfg to per-dimension files");
+		try
+		{
+			Configuration legacyConfig = new Configuration(legacyFile);
+			List<Marker> loaded = this.loadFromConfig(legacyConfig);
+			File backup = new File(worldDir, "markers.cfg.bak");
+			if (loaded.isEmpty())
+			{
+				Logging.logInfo("Legacy markers.cfg contains no markers, renaming to %s", backup.getName());
+				legacyFile.renameTo(backup);
+				return;
+			}
+			Map<Integer, List<Marker>> dimMap = new HashMap<Integer, List<Marker>>();
+			for (Marker marker : loaded)
+			{
+				int dim = marker.dimension;
+				List<Marker> list = dimMap.get(dim);
+				if (list == null)
+				{
+					list = new ArrayList<Marker>();
+					dimMap.put(dim, list);
+				}
+				list.add(marker);
+			}
+			int totalMigrated = 0;
+			for (Map.Entry<Integer, List<Marker>> entry : dimMap.entrySet())
+			{
+				int dim = entry.getKey();
+				List<Marker> list = entry.getValue();
+				File dimFile = new File(worldDir, "markers_dim" + dim + ".cfg");
+				Configuration dimConfig = new Configuration(dimFile);
+				this.saveToConfig(dimConfig, list);
+				totalMigrated += list.size();
+			}
+			if (legacyFile.renameTo(backup))
+			{
+				Logging.logInfo("Migrated %d markers from legacy markers.cfg to %d dimension files, backup at %s", totalMigrated, dimMap.size(), backup.getName());
+			}
+			else
+			{
+				Logging.logWarning("Migrated %d markers but could not rename legacy markers.cfg (backup failed, file kept as-is)", totalMigrated);
+			}
+		}
+		catch (Exception e)
+		{
+			Logging.logError("Failed to migrate legacy markers.cfg: %s", e.getMessage());
+		}
+	}
+
 	public void loadAll()
 	{
 		this.markerList.clear();
@@ -119,6 +180,7 @@ public class MarkerManager
 		{
 			return;
 		}
+		this.migrateLegacyMarkers(worldDir);
 		File[] files = worldDir.listFiles((dir, name) -> name.startsWith("markers_dim") && name.endsWith(".cfg"));
 		if (files != null)
 		{

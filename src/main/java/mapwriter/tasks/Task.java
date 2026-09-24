@@ -12,6 +12,11 @@ public abstract class Task implements Runnable
 	// returns false if the task has to be added to a new future
 	public abstract boolean CheckForDuplicate();
 
+	public boolean isDroppable()
+	{
+		return true;
+	}
+
 	// methods to access the tasks Future variable
 	public final Future<?> getFuture()
 	{

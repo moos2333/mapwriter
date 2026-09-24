@@ -19,6 +19,12 @@ public class SaveChunkTask extends Task
 	}
 
 	@Override
+	public boolean isDroppable()
+	{
+		return false;
+	}
+
+	@Override
 	public boolean CheckForDuplicate()
 	{
 		Long coords = this.chunk.getCoordIntPair();

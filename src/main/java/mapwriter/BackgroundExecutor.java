@@ -56,6 +56,7 @@ public class BackgroundExecutor
 	private LinkedList<Task> taskQueue;
 	public boolean closed = false;
 	private boolean doDiag = true;
+	private int droppedTaskCount = 0;
 
 	public BackgroundExecutor()
 	{
@@ -66,40 +67,49 @@ public class BackgroundExecutor
 	// add a task to the queue
 	public boolean addTask(Task task)
 	{
-		if (!this.closed)
+		if (this.closed)
+		{
+			Logging.log("MwExecutor.addTask: error: cannot add task to closed executor");
+			return false;
+		}
+
+		if (!task.CheckForDuplicate())
 		{
 			if (this.taskQueue.size() >= MAX_QUEUE_SIZE)
 			{
-				return this.closed;
-			}
-			if (!task.CheckForDuplicate())
-			{
-				Future<?> future = this.executor.submit(task);
-				task.setFuture(future);
-				this.taskQueue.add(task);
-			}
-
-			// bit for diagnostics on task left to optimize code
-			if (this.tasksRemaining() > 500)
-			{
-				if (this.doDiag)
+				if (task.isDroppable())
 				{
-					this.doDiag = false;
-					Logging.logError("Taskque went over 500 starting diagnostic");
-					this.taskLeftPerType();
-					Logging.logError("End of diagnostic");
+					this.droppedTaskCount++;
+					if (this.droppedTaskCount == 1 || this.droppedTaskCount % 100 == 0)
+					{
+						Logging.log("MwExecutor.addTask: queue full (%d), dropped %d droppable tasks so far", this.taskQueue.size(), this.droppedTaskCount);
+					}
+					return false;
 				}
+				Logging.logWarning("MwExecutor.addTask: queue full (%d), accepting non-droppable task %s", this.taskQueue.size(), task.getClass().getSimpleName());
 			}
-			else
+			Future<?> future = this.executor.submit(task);
+			task.setFuture(future);
+			this.taskQueue.add(task);
+		}
+
+		// bit for diagnostics on task left to optimize code
+		if (this.taskQueue.size() > MAX_QUEUE_SIZE)
+		{
+			if (this.doDiag)
 			{
-				this.doDiag = true;
+				this.doDiag = false;
+				Logging.logError("Taskque went over %d starting diagnostic", MAX_QUEUE_SIZE);
+				this.taskLeftPerType();
+				Logging.logError("End of diagnostic");
 			}
 		}
 		else
 		{
-			Logging.log("MwExecutor.addTask: error: cannot add task to closed executor");
+			this.doDiag = true;
 		}
-		return this.closed;
+
+		return true;
 	}
 
 	public boolean close()
