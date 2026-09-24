@@ -11,7 +11,7 @@ import net.minecraftforge.common.config.Configuration;
 
 public class WorldConfig
 {
-	private static WorldConfig instance = null;
+	private static volatile WorldConfig instance = null;
 
 	public static WorldConfig getInstance()
 	{

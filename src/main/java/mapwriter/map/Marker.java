@@ -49,7 +49,7 @@ public class Marker
 
 		// draw a coloured rectangle centered on the calculated (x, y)
 		double mSize = mapMode.getConfig().markerSize;
-		double halfMSize = mapMode.getConfig().markerSize / 2.0;
+		double halfMSize = mSize / 2.0;
 		Render.setColour(borderColour);
 		Render.drawRect(p.x - halfMSize, p.y - halfMSize, mSize, mSize);
 		Render.setColour(this.colour);
@@ -68,8 +68,8 @@ public class Marker
 		if (o instanceof Marker)
 		{
 			Marker m = (Marker) o;
-			return this.name == m.name &&
-					this.groupName == m.groupName &&
+			return this.name.equals(m.name) &&
+					this.groupName.equals(m.groupName) &&
 					this.x == m.x &&
 					this.y == m.y &&
 					this.z == m.z &&
@@ -104,6 +104,6 @@ public class Marker
 	public String getString()
 	{
 		return String.format("%s %s (%d, %d, %d) %d %06x", this.name, this.groupName, this.x, this.y, this.z, this.dimension, this.colour &
-																																0xffffff);
+				0xffffff);
 	}
 }

@@ -121,7 +121,8 @@ public class BlockColours
 					"block candymod:gummy_block 1 ffe8c090\n" +
 					"block candymod:gummy_block 2 ffe8e0a0\n" +
 					"block candymod:gummy_block 3 ffd8d8d8\n" +
-					"block candymod:gummy_block 4 ffa0e8a0\n");
+					"block candymod:gummy_block 4 ffa0e8a0\n" +
+					"block thebetweenlands:puddle * 00000000\n");
 		}
 		catch (IOException e)
 		{

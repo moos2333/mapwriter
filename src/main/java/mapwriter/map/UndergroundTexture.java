@@ -118,10 +118,8 @@ public class UndergroundTexture extends Texture
 
 	public boolean isChunkInTexture(int cx, int cz)
 	{
-		Point requestedChunk = new Point(cx, cz);
-		int offset = this.getLoadedChunkOffset(cx, cz);
-		Point chunk = this.loadedChunkArray[offset];
-		return chunk != null && chunk.equals(requestedChunk);
+		Point chunk = this.loadedChunkArray[this.getLoadedChunkOffset(cx, cz)];
+		return chunk != null && chunk.x == cx && chunk.y == cz;
 	}
 
 	public void requestView(MapView view)
@@ -134,13 +132,12 @@ public class UndergroundTexture extends Texture
 		{
 			for (int cx = cxMin; cx <= cxMax; cx++)
 			{
-				Point requestedChunk = new Point(cx, cz);
 				int offset = this.getLoadedChunkOffset(cx, cz);
 				Point currentChunk = this.loadedChunkArray[offset];
-				if (currentChunk == null || !currentChunk.equals(requestedChunk))
+				if (currentChunk == null || currentChunk.x != cx || currentChunk.y != cz)
 				{
 					this.clearChunkPixels(cx, cz);
-					this.loadedChunkArray[offset] = requestedChunk;
+					this.loadedChunkArray[offset] = new Point(cx, cz);
 				}
 			}
 		}
