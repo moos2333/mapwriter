@@ -124,7 +124,6 @@ public class BackgroundExecutor
 			this.processRemainingTasks(50, 5);
 			// should already be terminated, but just in case...
 			error = !this.executor.awaitTermination(10L, TimeUnit.SECONDS);
-			error = false;
 		}
 		catch (InterruptedException e)
 		{

@@ -41,7 +41,7 @@ public class Mw
 	{
 		if (Mw.instance == null)
 		{
-			synchronized (WorldConfig.class)
+			synchronized (Mw.class)
 			{
 				if (Mw.instance == null)
 				{
@@ -67,6 +67,8 @@ public class Mw
 	public int playerYInt = 0;
 	public int playerZInt = 0;
 	public String playerBiome = "";
+	private int lastBiomeX = Integer.MIN_VALUE;
+	private int lastBiomeZ = Integer.MIN_VALUE;
 	public double playerHeading = 0.0;
 	public int playerDimension = 0;
 	public float mapRotationDegrees = 0.0f;
@@ -152,6 +154,8 @@ public class Mw
 			Logging.log("Mapwriter: ERROR: could not create images directory '%s'", this.imageDir.getPath());
 
 		this.tickCounter = 0;
+		this.lastBiomeX = Integer.MIN_VALUE;
+		this.lastBiomeZ = Integer.MIN_VALUE;
 
 		this.reloadBlockColours();
 
@@ -252,8 +256,7 @@ public class Mw
 		if (!this.ready || Config.maxDeathMarkers <= 0) return;
 		this.updatePlayer();
 		int deleteCount = this.markerManager.countMarkersInGroup("playerDeaths") - Config.maxDeathMarkers + 1;
-		for (int i = 0; i < deleteCount; i++)
-			this.markerManager.delMarker(null, "playerDeaths");
+		this.markerManager.delMarkers("playerDeaths", deleteCount);
 		this.markerManager.addMarker(Utils.getCurrentDateString(), "playerDeaths",
 				this.playerXInt, this.playerYInt, this.playerZInt, this.playerDimension, 0xffff0000);
 		this.markerManager.setVisibleGroupName("playerDeaths");
@@ -305,9 +308,13 @@ public class Mw
 		if (savedColoursFile.isFile())
 			this.blockColours.loadFromFile(savedColoursFile);
 
+		MapTexture oldMapTexture = this.mapTexture;
+		UndergroundTexture oldUndergroundTexture = this.undergroundMapTexture;
 		this.mapTexture = new MapTexture(this.textureSize, Config.linearTextureScaling);
 		this.undergroundMapTexture = new UndergroundTexture(this, this.textureSize, Config.linearTextureScaling);
-		this.chunkManager = new ChunkManager(this);
+		if (this.chunkManager == null) this.chunkManager = new ChunkManager(this);
+		if (oldMapTexture != null) oldMapTexture.close();
+		if (oldUndergroundTexture != null) oldUndergroundTexture.close();
 	}
 
 	public void reloadMapTexture()
@@ -330,7 +337,7 @@ public class Mw
 		UndergroundTexture oldTexture = this.undergroundMapTexture;
 		UndergroundTexture newTexture = new UndergroundTexture(this, this.textureSize, Config.linearTextureScaling);
 		this.undergroundMapTexture = newTexture;
-		if (oldTexture != null) this.undergroundMapTexture.close();
+		if (oldTexture != null) oldTexture.close();
 	}
 
 	public void saveBlockColours(BlockColours bc)
@@ -407,8 +414,12 @@ public class Mw
 		this.playerYInt = (int) Math.floor(this.playerY);
 		this.playerZInt = (int) Math.floor(this.playerZ);
 
-		if (this.mc.world != null)
+		int biomeX = this.playerXInt >> 2;
+		int biomeZ = this.playerZInt >> 2;
+		if (this.mc.world != null && (biomeX != this.lastBiomeX || biomeZ != this.lastBiomeZ))
 		{
+			this.lastBiomeX = biomeX;
+			this.lastBiomeZ = biomeZ;
 			BlockPos playerPos = new BlockPos(this.playerX, 0, this.playerZ);
 			if (!this.mc.world.getChunk(playerPos).isEmpty())
 				this.playerBiome = this.mc.world.getBiomeForCoordsBody(playerPos).getBiomeName();

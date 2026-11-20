@@ -225,7 +225,7 @@ public class Texture
 		if (this.released) return;
 		this.bind();
 		this.pixelBuf.position(0);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, this.w, this.h, 0, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, this.pixelBuf);
+		GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, this.w, this.h, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, this.pixelBuf);
 	}
 
 	// update texture from pixels in pixelBuf

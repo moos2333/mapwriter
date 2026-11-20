@@ -11,7 +11,6 @@ import mapwriter.region.IChunk;
 import mapwriter.util.Texture;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
@@ -39,10 +38,9 @@ public class UndergroundTexture extends Texture
 
 			if (k == 255)
 			{
-				Biome biome = Minecraft.getMinecraft().world.getBiomeProvider().getBiome(new BlockPos(k, k, k), Biomes.PLAINS);
-				k = Biome.getIdForBiome(biome);
+				BlockPos pos = new BlockPos((this.chunk.x << 4) + i, 0, (this.chunk.z << 4) + j);
+				k = Biome.getIdForBiome(this.chunk.getWorld().getBiomeProvider().getBiome(pos, Biomes.PLAINS));
 			}
-			;
 			return k;
 		}
 

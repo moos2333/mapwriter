@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import mapwriter.util.Logging;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -213,12 +212,7 @@ public class MwChunk implements IChunk
 		int j = z & 15;
 		int k = this.biomeArray[j << 4 | i] & 255;
 
-		if (k == 255)
-		{
-			Biome biome = Minecraft.getMinecraft().world.getBiomeProvider().getBiome(new BlockPos(k, k, k), Biomes.PLAINS);
-			k = Biome.getIdForBiome(biome);
-		}
-		return k;
+		return k == 255 ? Biome.getIdForBiome(Biomes.PLAINS) : k;
 	}
 
 	@Override

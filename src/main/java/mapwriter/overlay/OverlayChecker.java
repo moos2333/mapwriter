@@ -1,6 +1,5 @@
 package mapwriter.overlay;
 
-import java.awt.Point;
 import java.util.ArrayList;
 
 import mapwriter.api.ILabelInfo;
@@ -12,54 +11,7 @@ import net.minecraft.util.math.MathHelper;
 
 public class OverlayChecker implements IMwDataProvider
 {
-
-	public class ChunkOverlay implements IMwChunkOverlay
-	{
-
-		Point coord;
-
-		public ChunkOverlay(int x, int z)
-		{
-			this.coord = new Point(x, z);
-		}
-
-		@Override
-		public int getBorderColor()
-		{
-			return 0xff000000;
-		}
-
-		@Override
-		public float getBorderWidth()
-		{
-			return 0.5f;
-		}
-
-		@Override
-		public int getColor()
-		{
-			return 0x90ffffff;
-		}
-
-		@Override
-		public Point getCoordinates()
-		{
-			return this.coord;
-		}
-
-		@Override
-		public float getFilling()
-		{
-			return 1.0f;
-		}
-
-		@Override
-		public boolean hasBorder()
-		{
-			return true;
-		}
-
-	}
+	private final OverlayChunks overlays = new OverlayChunks(0x90ffffff);
 
 	@Override
 	public ArrayList<IMwChunkOverlay> getChunksOverlay(int dim, double centerX, double centerZ, double minX, double minZ, double maxX, double maxZ)
@@ -81,20 +33,19 @@ public class OverlayChecker implements IMwDataProvider
 		int limitMinZ = Math.max(minChunkZ, cZ - 100);
 		int limitMaxZ = Math.min(maxChunkZ, cZ + 100);
 
-		ArrayList<IMwChunkOverlay> chunks = new ArrayList<IMwChunkOverlay>();
+		this.overlays.begin();
 		for (int x = limitMinX; x <= limitMaxX; x++)
 		{
 			for (int z = limitMinZ; z <= limitMaxZ; z++)
 			{
 				if ((x + z) % 2 == 0)
 				{
-					chunks.add(new ChunkOverlay(x, z));
+					this.overlays.add(x, z);
 				}
 			}
 		}
-		;
 
-		return chunks;
+		return this.overlays.end();
 	}
 
 	@Override
@@ -155,5 +106,4 @@ public class OverlayChecker implements IMwDataProvider
 	{
 
 	}
-
 }

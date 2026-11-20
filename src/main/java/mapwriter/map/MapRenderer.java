@@ -52,13 +52,14 @@ public class MapRenderer
 		Render.drawRect(topCorner.x + offsetX + 1, topCorner.y + offsetY + 1, sizeX - 1, sizeY - 1);
 	}
 
+	private static final int TEXT_LINE_HEIGHT = 12;
+
 	private Mw mw;
 	private MapMode mapMode;
 	private MapView mapView;
 	// accessed by the MwGui to check whether the mouse cursor is near the
 	// player arrow on the rendered map
 	public Point.Double playerArrowScreenPos = new Point.Double(0, 0);
-	private int textOffset = 12;
 	private int textY = 0;
 
 	private int textX = 0;
@@ -216,15 +217,16 @@ public class MapRenderer
 	{
 		if (!this.mapMode.getConfig().biomeMode.equals(MapModeConfig.coordsModeStringArray[0]))
 		{
+			int offset = TEXT_LINE_HEIGHT;
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(this.textX, this.textY, 0);
 			if (this.mapMode.getConfig().biomeMode.equals(MapModeConfig.coordsModeStringArray[1]))
 			{
 				GlStateManager.scale(0.5f, 0.5f, 1.0f);
-				this.textOffset = (int) (this.textOffset * 0.5f);
+				offset /= 2;
 			}
 			Render.drawCentredString(0, 0, this.mapMode.getTextColour(), this.mw.playerBiome.equals("") ? "BiomeName" : this.mw.playerBiome);
-			this.textY += this.textOffset;
+			this.textY += offset;
 			GlStateManager.popMatrix();
 		}
 	}
@@ -251,15 +253,16 @@ public class MapRenderer
 		// draw coordinates
 		if (!this.mapMode.getConfig().coordsMode.equals(MapModeConfig.coordsModeStringArray[0]))
 		{
+			int offset = TEXT_LINE_HEIGHT;
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(this.textX, this.textY, 0);
 			if (this.mapMode.getConfig().coordsMode.equals(MapModeConfig.coordsModeStringArray[1]))
 			{
 				GlStateManager.scale(0.5f, 0.5f, 1.0f);
-				this.textOffset = (int) (this.textOffset * 0.5f);
+				offset /= 2;
 			}
 			Render.drawCentredString(0, 0, this.mapMode.getTextColour(), "%d, %d, %d", this.mw.playerXInt, this.mw.playerYInt, this.mw.playerZInt);
-			this.textY += this.textOffset;
+			this.textY += offset;
 			GlStateManager.popMatrix();
 		}
 	}
@@ -445,7 +448,6 @@ public class MapRenderer
 
 	private void drawStatusText()
 	{
-		this.textOffset = 12;
 		this.textY = this.mapMode.getTextY();
 		this.textX = this.mapMode.getTextX();
 		drawCoords();
@@ -460,9 +462,8 @@ public class MapRenderer
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(this.textX, this.textY, 0);
 			GlStateManager.scale(0.5f, 0.5f, 1.0f);
-			this.textOffset = (int) (this.textOffset * 0.5f);
 			Render.drawCentredString(0, 0, this.mapMode.getTextColour(), "underground mode");
-			this.textY += this.textOffset;
+			this.textY += TEXT_LINE_HEIGHT / 2;
 			GlStateManager.popMatrix();
 		}
 	}

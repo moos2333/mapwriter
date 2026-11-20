@@ -277,6 +277,27 @@ public class MarkerManager
 		return this.delMarker(markerToDelete);
 	}
 
+	public void delMarkers(String group, int count)
+	{
+		if (count <= 0) return;
+		for (int i = 0; i < count; i++)
+		{
+			Marker markerToDelete = null;
+			for (Marker marker : this.markerList)
+			{
+				if (marker.groupName.equals(group))
+				{
+					markerToDelete = marker;
+					break;
+				}
+			}
+			if (markerToDelete == null) break;
+			if (this.selectedMarker == markerToDelete) this.selectedMarker = null;
+			this.markerList.remove(markerToDelete);
+		}
+		this.saveAll();
+	}
+
 	public void clear()
 	{
 		this.markerList.clear();

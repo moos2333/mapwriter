@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import mapwriter.util.Logging;
 import mapwriter.util.Reference;
 import mapwriter.util.Render;
@@ -56,7 +57,10 @@ public class BlockColours
 	private Map<String, Integer> grassCache = new HashMap<String, Integer>();
 	private Map<String, Integer> foliageCache = new HashMap<String, Integer>();
 	private Map<String, Integer> waterCache = new HashMap<String, Integer>();
-	private Map<Integer, String> biomeNameCache = new HashMap<Integer, String>();
+	private final Map<Block, BlockData[]> blockDataCache = new ConcurrentHashMap<Block, BlockData[]>();
+	private final String[] biomeNameArray = new String[256];
+
+	private static final BlockData[] NO_BLOCK_DATA = new BlockData[MAX_META];
 
 	public BlockColours() {}
 
@@ -263,21 +267,14 @@ public class BlockColours
 
 	public int getBiomeColour(IBlockState BlockState, int biomeId)
 	{
-		String biomeName = this.biomeNameCache.get(biomeId);
-		if (biomeName == null)
-		{
-			Biome biome = Biome.getBiomeForId(biomeId);
-			if (biomeId == 255) biome = Biomes.PLAINS;
-			biomeName = (biome != null) ? biome.getBiomeName() : "";
-			this.biomeNameCache.put(biomeId, biomeName);
-		}
 		Block block = BlockState.getBlock();
 		if (block == null || block.delegate == null || block.delegate.name() == null)
 		{
 			return 0xffffff;
 		}
-		int meta = block.getMetaFromState(BlockState);
-		return this.getBiomeColour(block.delegate.name().toString(), meta, biomeName);
+		BlockData data = this.getBlockData(block)[block.getMetaFromState(BlockState) & 0xf];
+		if (data == null) return 0xffffff;
+		return this.getBiomeColour(data, this.getBiomeName(biomeId));
 	}
 
 	public int getBiomeColour(String BlockName, int meta, String biomeName)
@@ -287,6 +284,11 @@ public class BlockColours
 		if (arr == null) return 0xffffff;
 		BlockData data = arr[meta & 0xf];
 		if (data == null) return 0xffffff;
+		return this.getBiomeColour(data, biomeName);
+	}
+
+	private int getBiomeColour(BlockData data, String biomeName)
+	{
 		switch (data.type)
 		{
 			case GRASS:
@@ -299,6 +301,33 @@ public class BlockColours
 			default:
 				return 0xffffff;
 		}
+	}
+
+	private String getBiomeName(int biomeId)
+	{
+		int id = biomeId & 0xff;
+		String biomeName = this.biomeNameArray[id];
+		if (biomeName == null)
+		{
+			Biome biome = Biome.getBiomeForId(id);
+			if (id == 255) biome = Biomes.PLAINS;
+			biomeName = (biome != null) ? biome.getBiomeName() : "";
+			if (biomeName == null) biomeName = "";
+			this.biomeNameArray[id] = biomeName;
+		}
+		return biomeName;
+	}
+
+	private BlockData[] getBlockData(Block block)
+	{
+		BlockData[] arr = this.blockDataCache.get(block);
+		if (arr == null)
+		{
+			arr = this.bcMap.get(block.delegate.name().toString());
+			if (arr == null) arr = NO_BLOCK_DATA;
+			this.blockDataCache.put(block, arr);
+		}
+		return arr;
 	}
 
 	public BlockType getBlockType(int BlockAndMeta)
@@ -323,8 +352,8 @@ public class BlockColours
 		{
 			return 0;
 		}
-		int meta = block.getMetaFromState(BlockState);
-		return this.getColour(block.delegate.name().toString(), meta);
+		BlockData data = this.getBlockData(block)[block.getMetaFromState(BlockState) & 0xf];
+		return (data != null) ? data.color : 0;
 	}
 
 	public int getColour(String BlockName, int meta)
@@ -479,6 +508,7 @@ public class BlockColours
 			arr[m].type = type;
 			arr[m].color = adjustBlockColourFromType(BlockName, meta, type, arr[m].color);
 		}
+		this.blockDataCache.clear();
 	}
 
 	public void setColour(String BlockName, String meta, int colour)
@@ -503,6 +533,7 @@ public class BlockColours
 			if (arr[m] == null) arr[m] = new BlockData();
 			arr[m].color = colour;
 		}
+		this.blockDataCache.clear();
 	}
 
 	private int getFoliageColourMultiplier(String biomeName)

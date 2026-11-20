@@ -157,14 +157,11 @@ public class ChunkManager
 
 	private void addSaveChunkTask(Chunk chunk)
 	{
-		boolean singleplayer = Minecraft.getMinecraft().isSingleplayer();
-		if (singleplayer && Config.regionFileOutputEnabledMP ||
-				!singleplayer && Config.regionFileOutputEnabledSP)
+		boolean enabled = Minecraft.getMinecraft().isSingleplayer()
+				? Config.regionFileOutputEnabledSP : Config.regionFileOutputEnabledMP;
+		if (enabled && !chunk.isEmpty())
 		{
-			if (!chunk.isEmpty())
-			{
-				this.mw.executor.addTask(new SaveChunkTask(copyToMwChunk(chunk), this.mw.regionManager));
-			}
+			this.mw.executor.addTask(new SaveChunkTask(copyToMwChunk(chunk), this.mw.regionManager));
 		}
 	}
 }
