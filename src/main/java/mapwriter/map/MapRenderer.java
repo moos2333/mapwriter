@@ -16,40 +16,44 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class MapRenderer
 {
+	private static double clamp(double value, double min, double max)
+	{
+		return value < min ? min : (value > max ? max : value);
+	}
+
 	private static void paintChunk(MapMode mapMode, MapView mapView, IMwChunkOverlay overlay)
 	{
 		int chunkX = overlay.getCoordinates().x;
 		int chunkZ = overlay.getCoordinates().y;
 		float filling = overlay.getFilling();
 
-		Point.Double topCorner = mapMode.blockXZtoScreenXY(mapView, chunkX << 4, chunkZ << 4);
-		Point.Double botCorner = mapMode.blockXZtoScreenXY(mapView, chunkX + 1 << 4, chunkZ + 1 << 4);
+		double viewX = mapView.getX();
+		double viewZ = mapView.getZ();
+		double viewW = mapView.getWidth();
+		double viewH = mapView.getHeight();
+		double mapW = mapMode.getW();
+		double mapH = mapMode.getH();
+		double mapX = mapMode.getX();
+		double mapY = mapMode.getY();
 
-		topCorner.x = Math.max(mapMode.getX(), topCorner.x);
-		topCorner.x = Math.min(mapMode.getX() + mapMode.getW(), topCorner.x);
-		topCorner.y = Math.max(mapMode.getY(), topCorner.y);
-		topCorner.y = Math.min(mapMode.getY() + mapMode.getH(), topCorner.y);
+		double topX = clamp(mapW * (((chunkX << 4) - viewX) / viewW), mapX, mapX + mapW);
+		double topY = clamp(mapH * (((chunkZ << 4) - viewZ) / viewH), mapY, mapY + mapH);
+		double botX = clamp(mapW * ((((chunkX + 1) << 4) - viewX) / viewW), mapX, mapX + mapW);
+		double botY = clamp(mapH * ((((chunkZ + 1) << 4) - viewZ) / viewH), mapY, mapY + mapH);
 
-		botCorner.x = Math.max(mapMode.getX(), botCorner.x);
-		botCorner.x = Math.min(mapMode.getX() + mapMode.getW(), botCorner.x);
-		botCorner.y = Math.max(mapMode.getY(), botCorner.y);
-		botCorner.y = Math.min(mapMode.getY() + mapMode.getH(), botCorner.y);
-
-		double sizeX = (botCorner.x - topCorner.x) * filling;
-		double sizeY = (botCorner.y - topCorner.y) * filling;
-		double offsetX = (botCorner.x - topCorner.x - sizeX) / 2;
-		double offsetY = (botCorner.y - topCorner.y - sizeY) / 2;
+		double sizeX = (botX - topX) * filling;
+		double sizeY = (botY - topY) * filling;
+		double offsetX = (botX - topX - sizeX) / 2;
+		double offsetY = (botY - topY - sizeY) / 2;
 
 		if (overlay.hasBorder())
 		{
 			Render.setColour(overlay.getBorderColor());
-			Render.drawRectBorder(topCorner.x + 1, topCorner.y + 1, botCorner.x -	topCorner.x -
-																	1, botCorner.y -	topCorner.y -
-																		1, overlay.getBorderWidth());
+			Render.drawRectBorder(topX + 1, topY + 1, botX - topX - 1, botY - topY - 1, overlay.getBorderWidth());
 		}
 
 		Render.setColour(overlay.getColor());
-		Render.drawRect(topCorner.x + offsetX + 1, topCorner.y + offsetY + 1, sizeX - 1, sizeY - 1);
+		Render.drawRect(topX + offsetX + 1, topY + offsetY + 1, sizeX - 1, sizeY - 1);
 	}
 
 	private static final int TEXT_LINE_HEIGHT = 12;

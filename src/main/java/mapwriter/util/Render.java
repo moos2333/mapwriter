@@ -56,13 +56,15 @@ public class Render
 		GlStateManager.disableBlend();
 	}
 
+	public static void drawCentredString(int x, int y, int colour, String text)
+	{
+		FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+		fr.drawStringWithShadow(text, x - fr.getStringWidth(text) / 2, y, colour);
+	}
+
 	public static void drawCentredString(int x, int y, int colour, String formatString, Object... args)
 	{
-		Minecraft mc = Minecraft.getMinecraft();
-		FontRenderer fr = mc.fontRenderer;
-		String s = String.format(formatString, args);
-		int w = fr.getStringWidth(s);
-		fr.drawStringWithShadow(s, x - w / 2, y, colour);
+		drawCentredString(x, y, colour, String.format(formatString, args));
 	}
 
 	public static void drawCircle(double x, double y, double r)

@@ -1,7 +1,5 @@
 package mapwriter.map;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.lwjgl.opengl.GL11;
 import mapwriter.BackgroundExecutor;
@@ -90,19 +88,14 @@ public class MapTexture extends Texture
 
 	public void processTextureUpdates()
 	{
-		if (textureUpdateQueue.isEmpty())
-			return;
-
-		List<Rect> batch = new ArrayList<>(MAX_UPDATES_PER_FRAME);
-		Rect r;
-		int count = 0;
-		while ((r = textureUpdateQueue.poll()) != null && count < MAX_UPDATES_PER_FRAME)
+		Rect rect;
+		for (int i = 0; i < MAX_UPDATES_PER_FRAME; i++)
 		{
-			batch.add(r);
-			count++;
-		}
-		for (Rect rect : batch)
-		{
+			rect = textureUpdateQueue.poll();
+			if (rect == null)
+			{
+				return;
+			}
 			this.updateTextureArea(rect.x, rect.y, rect.w, rect.h);
 		}
 	}

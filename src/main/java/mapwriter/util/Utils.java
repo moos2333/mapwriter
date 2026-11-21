@@ -187,13 +187,14 @@ public class Utils
 		else if (Minecraft.getMinecraft().getCurrentServerData() != null)
 		{
 			worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+			int portIndex = worldName.indexOf(':');
 			if (!Config.portNumberInWorldNameEnabled)
 			{
-				worldName = worldName.substring(0, worldName.indexOf(":"));
+				if (portIndex >= 0) worldName = worldName.substring(0, portIndex);
 			}
 			else
 			{
-				if (worldName.indexOf(":") == -1)
+				if (portIndex == -1)
 				{
 					worldName += "_25565";
 				}
