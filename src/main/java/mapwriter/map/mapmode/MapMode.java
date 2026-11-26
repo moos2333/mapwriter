@@ -151,8 +151,10 @@ public class MapMode implements IMapMode
 			newY = this.sh - -this.y;
 		}
 
-		double x = (newX - this.w / 2) * 100.0 / (this.sw - this.w);
-		double y = (newY - this.h / 2) * 100.0 / (this.sh - this.h);
+		int spanX = this.sw - this.w;
+		int spanY = this.sh - this.h;
+		double x = spanX > 0 ? (newX - this.w / 2) * 100.0 / spanX : 50.0;
+		double y = spanY > 0 ? (newY - this.h / 2) * 100.0 / spanY : 50.0;
 
 		Point.Double pos = new Point.Double(x, y);
 		return pos;

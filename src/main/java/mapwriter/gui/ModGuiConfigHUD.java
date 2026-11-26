@@ -300,15 +300,15 @@ public class ModGuiConfigHUD extends GuiConfig
 		{
 			bottomOffset = bottomOffset + this.mc.fontRenderer.FONT_HEIGHT + 3;
 		}
-		if (!this.mapMode.getConfig().biomeMode.equals(MapModeConfig.coordsModeStringArray[0]))
+		if (!this.mapMode.getConfig().coordsMode.equals(MapModeConfig.coordsModeStringArray[0]))
 		{
 			bottomOffset = bottomOffset + this.mc.fontRenderer.FONT_HEIGHT + 3;
 		}
 		bottomOffset = bottomOffset / this.height * 100;
 
-		double SmallMarginY = 10.00 / (this.height - this.mapMode.getH()) * 100.0;
-		double SmallMarginX = 10.00 / (this.width - this.mapMode.getW()) * 100.0;
-		double LargeMarginBottom = 40.00 / (this.height - this.mapMode.getH()) * 100.0;
+		double SmallMarginY = this.height > this.mapMode.getH() ? 10.00 / (this.height - this.mapMode.getH()) * 100.0 : 0.0;
+		double SmallMarginX = this.width > this.mapMode.getW() ? 10.00 / (this.width - this.mapMode.getW()) * 100.0 : 0.0;
+		double LargeMarginBottom = this.height > this.mapMode.getH() ? 40.00 / (this.height - this.mapMode.getH()) * 100.0 : 0.0;
 
 		bottomOffset = bottomOffset < SmallMarginY ? SmallMarginY : bottomOffset;
 		// top left

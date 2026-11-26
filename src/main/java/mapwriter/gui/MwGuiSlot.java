@@ -203,6 +203,11 @@ public abstract class MwGuiSlot
 
 	public int getSlotIndexFromScreenCoords(int x, int y)
 	{
+		int size = this.getSize();
+		if (size <= 0)
+		{
+			return -1;
+		}
 		int k = this.left + this.width / 2 - this.getListWidth() / 2;
 		int l = this.left + this.width / 2 + this.getListWidth() / 2 - this.scrollBarWidth;
 		int i1 = y - this.top - this.headerPadding + (int) this.amountScrolled;
@@ -210,14 +215,17 @@ public abstract class MwGuiSlot
 		int yStart = 0;
 		int yStop = yStart + this.getSlotHeight(0);
 
-		for (int index = 0; index < this.getSize(); ++index)
+		for (int index = 0; index < size; ++index)
 		{
 			if (i1 >= yStart && i1 <= yStop)
 			{
 				return x < this.getScrollBarX() && x >= k && x <= l && i1 >= 0 ? index : -1;
 			}
 			yStart = yStop;
-			yStop += this.getSlotHeight(index + 1);
+			if (index + 1 < size)
+			{
+				yStop += this.getSlotHeight(index + 1);
+			}
 		}
 		return -1;
 	}

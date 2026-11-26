@@ -250,7 +250,7 @@ public class MwGui extends GuiScreen
 		int x = this.width / 2 - 10 - this.fontRenderer.getStringWidth(s) / 2;
 
 		this.statusLabel.setCoords(x, this.height - 21);
-		this.statusLabel.setText(new String[] { builder.toString() }, null);
+		this.statusLabel.setText(new String[] { s }, null);
 		this.statusLabel.draw();
 	}
 
@@ -289,7 +289,7 @@ public class MwGui extends GuiScreen
 	@Override
 	public void handleMouseInput() throws IOException
 	{
-		if (this.MarkerOverlay.isMouseInField() && this.mouseLeftHeld == 0)
+		if (this.MarkerOverlay.getEnabled() && this.MarkerOverlay.isMouseInField() && this.mouseLeftHeld == 0)
 		{
 			this.MarkerOverlay.handleMouseInput();
 		}
@@ -430,7 +430,6 @@ public class MwGui extends GuiScreen
 	{
 		Keyboard.enableRepeatEvents(false);
 		this.mw.miniMap.view.setDimension(this.mapView.getDimension());
-		Keyboard.enableRepeatEvents(false);
 	}
 
 	public void openMarkerGui(Marker m, int mouseX, int mouseY)
@@ -649,7 +648,7 @@ public class MwGui extends GuiScreen
 		Marker marker = this.getMarkerNearScreenPos(x, y);
 		Marker prevMarker = this.mw.markerManager.selectedMarker;
 
-		if (this.MarkerOverlay.isMouseInField() && this.mouseLeftHeld == 0)
+		if (this.MarkerOverlay.getEnabled() && this.MarkerOverlay.isMouseInField() && this.mouseLeftHeld == 0)
 		{
 			this.MarkerOverlay.handleMouseInput();
 		}

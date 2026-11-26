@@ -1,6 +1,7 @@
 package mapwriter.map;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.lwjgl.opengl.GL11;
 import mapwriter.BackgroundExecutor;
 import mapwriter.region.Region;
@@ -25,6 +26,7 @@ public class MapTexture extends Texture
 	private MapViewRequest requestedView = null;
 	private Region[] regionArray;
 	private final ConcurrentLinkedQueue<Rect> textureUpdateQueue = new ConcurrentLinkedQueue<>();
+	private final AtomicInteger queuedUpdates = new AtomicInteger();
 
 	public MapTexture(int textureSize, boolean linearScaling)
 	{
@@ -37,11 +39,12 @@ public class MapTexture extends Texture
 
 	public void addTextureUpdate(int x, int z, int w, int h)
 	{
-		if (textureUpdateQueue.size() >= MAX_QUEUE_SIZE)
+		if (this.queuedUpdates.get() >= MAX_QUEUE_SIZE && this.textureUpdateQueue.poll() != null)
 		{
-			textureUpdateQueue.poll();
+			this.queuedUpdates.decrementAndGet();
 		}
-		textureUpdateQueue.add(new Rect(x, z, w, h));
+		this.textureUpdateQueue.add(new Rect(x, z, w, h));
+		this.queuedUpdates.incrementAndGet();
 	}
 
 	public int getRegionIndex(int x, int z, int zoomLevel)
@@ -96,6 +99,7 @@ public class MapTexture extends Texture
 			{
 				return;
 			}
+			this.queuedUpdates.decrementAndGet();
 			this.updateTextureArea(rect.x, rect.y, rect.w, rect.h);
 		}
 	}

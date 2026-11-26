@@ -2,6 +2,7 @@ package mapwriter.map;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +176,7 @@ public class MarkerManager
 	public void loadAll()
 	{
 		this.markerList.clear();
+		this.dimConfigs.clear();
 		File worldDir = this.getWorldDir();
 		if (worldDir == null)
 		{
@@ -188,8 +190,9 @@ public class MarkerManager
 			{
 				try
 				{
-					Configuration config = new Configuration(file);
-					List<Marker> loaded = this.loadFromConfig(config);
+					String name = file.getName();
+					int dimension = Integer.parseInt(name.substring("markers_dim".length(), name.length() - ".cfg".length()));
+					List<Marker> loaded = this.loadFromConfig(this.getDimConfig(dimension));
 					this.markerList.addAll(loaded);
 				}
 				catch (Exception e)
@@ -218,6 +221,13 @@ public class MarkerManager
 				dimMap.put(dim, list);
 			}
 			list.add(marker);
+		}
+		for (Integer dim : this.dimConfigs.keySet())
+		{
+			if (!dimMap.containsKey(dim))
+			{
+				dimMap.put(dim, Collections.<Marker>emptyList());
+			}
 		}
 		for (Map.Entry<Integer, List<Marker>> entry : dimMap.entrySet())
 		{

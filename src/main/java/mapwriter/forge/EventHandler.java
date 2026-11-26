@@ -113,7 +113,6 @@ public class EventHandler
 		else if (event.getGui() instanceof GuiGameOver)
 		{
 			this.mw.onPlayerDeath();
-			this.mw.markerManager.saveAll();
 		}
 		else if (event.getGui() instanceof GuiScreenRealmsProxy)
 		{

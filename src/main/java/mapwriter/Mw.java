@@ -60,6 +60,7 @@ public class Mw
 	public boolean ready = false;
 	public int tickCounter = 0;
 	public int textureSize = 2048;
+	private int appliedTextureSize = -1;
 	public double playerX = 0.0;
 	public double playerZ = 0.0;
 	public double playerY = 0.0;
@@ -349,12 +350,16 @@ public class Mw
 
 	public void setTextureSize()
 	{
-		if (Config.configTextureSize == this.textureSize) return;
+		if (Config.configTextureSize == this.appliedTextureSize) return;
+		this.appliedTextureSize = Config.configTextureSize;
+
 		int maxTextureSize = Render.getMaxTextureSize();
 		int textureSize = 1024;
 		while (textureSize <= maxTextureSize && textureSize <= Config.configTextureSize)
 			textureSize *= 2;
 		textureSize /= 2;
+
+		if (textureSize == this.textureSize) return;
 
 		Logging.log("GL reported max texture size = %d", maxTextureSize);
 		Logging.log("texture size from config = %d", Config.configTextureSize);
